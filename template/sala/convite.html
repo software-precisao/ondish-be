@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conta</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        *{
+            box-sizing: border-box;
+            text-decoration: none;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        body{
+            margin: 0 auto;
+            display: block;
+            font-family: "Inter" !important;
+            font-optical-sizing: auto;
+            font-style: normal;
+            font-variation-settings:
+              "slnt" 0;
+
+              background: #F7F8FA;
+
+        }
+
+        .container{
+            display: block;
+            margin: 0 auto;
+            padding: 40px 0px 40px 0px;
+            bottom: 0 !important;
+            width: 648px;
+            height: 100%;
+            background: #F7F8FA;
+        }
+
+        .box{
+            background: #DEE2E9;
+            width: 648px;
+            height: 356px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .content{
+            width: 568px;
+            min-height: 100vh;
+
+            margin: 40px auto ;
+            padding: 40px;
+            display: block;
+            gap: 24px;
+            text-align: left;
+
+            background: #FFFFFF;
+            box-shadow: 0px 10px 10px -5px rgba(0, 0, 0, 0.04), 0px 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+
+        }
+
+        .logo{
+            width: 120px;
+            margin: 0 auto ;
+            display: block;
+        }
+
+        .image{
+            max-width: 412px;
+            margin: 0 auto;
+            display: block;
+
+        }
+
+        .title{
+            flex: none;
+            font-size: 60px;
+            font-weight: 700;
+            color: #151516;
+            line-height: 121%;
+            margin-bottom: 25px
+
+        }
+
+        .msg{
+            font-size: 16px;
+            line-height: 191%;
+            margin-bottom: 40px;
+            color: black !important;
+        }
+
+        .card{
+            display: flex;
+            flex: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-right:10px;
+            color: black !important;
+        }
+
+        .icon{
+
+            max-width: 48px;
+            height: 48px;
+            margin-right: 20px;
+
+        }
+
+        .btn{
+            display: block;
+            text-align: center;
+            padding: 12px 24px;
+            gap: 8px;
+            margin-bottom: 20px;
+
+            background: #f30c0c;
+            box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.06), 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+
+            color: #fff;
+        }
+
+        .link{
+            display: block;
+            font-weight: 700;
+            font-size: 16px;
+            color: #E55749;
+            text-align: center;
+        }
+
+        footer{
+            display: block;
+            margin: 0 auto;
+            width: 568px;
+            text-align: center;
+            font-size: 12px;
+            line-height: 16px;
+            color: #767E9D;
+        }
+
+        .full{
+            max-width: 100%;
+            display: block;
+            text-align: center;
+        }
+
+        .full a{
+            padding: 5px;
+        }
+
+
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+            <img class="logo" src="https://ondish.webserverapi.online/emailmkt/logo/logo.png" alt="">
+
+        <div class="content">
+            <img class="image" src="https://ondish.webserverapi.online/emailmkt/images/jantar.png" alt="">
+
+            <h1 class="title">Vamos comer?</h1>
+
+            <p class="msg">
+                Olá {{nome}}, <br>
+                Você foi convidado para comer com {{anfitriao}}. O que acha de entrar na sua aplicação e correr para o restaurante?   
+            </p>
+
+
+            <a href="" class="btn">Vá até a aplicação e aceite esse pedido</a>
+        </div>
+
+        <footer>
+            <div class="full">
+                <ul>
+                    <li>
+                        <a href="https://www.facebook.com/profile.php?id=61553108737738">Facebook</a>
+                        <a href="https://www.linkedin.com/company/ondish-foods/?viewAsMember=true">Linkedin</a>
+                        <a href="https://www.instagram.com/ondishfoods/">Instagram</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="full">
+                <p>Se você precisa de ajuda, conte com nosso time de suporte.</p>
+                <p>Esta mensagem foi enviada pela equipa de suporte da Ondish - suporte@ondishfoods.com</p>
+            </div>
+
+            <div class="full">
+                <ul>
+                    <li>
+                        <a href="">Termos & Condições</a>
+                        <a href="">Política de Privacidade</a>
+                        <a href="#">Contato</a>
+                    </li>
+                </ul>
+            </div>
+
+        </footer>
+    </div>
+    
+</body>
+</html>

@@ -1,0 +1,5 @@
+.swagger-ui .topbar img {
+    content: url('/public/assets/images/logo.png');
+    width: auto;
+    height: 40px;
+  }

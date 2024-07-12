@@ -1,22 +1,53 @@
 {
   "name": "ondish-be",
   "version": "1.0.0",
-  "description": "BackEnd do projeto Ondish",
-  "main": "index.js",
+  "description": "Backend do App Ondish para reservas e pedidos de restaurantes",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js",
+    "start": "pm2 start server.js",
+    "stop": "pm2 stop server.js",
+    "list": "pm2 list",
+    "status": "pm2 status"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/software-precisao/ondish-be.git"
+    "url": ""
   },
-  "author": "Team Precisão",
+  "author": "Eng. Ragner Moura",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/software-precisao/ondish-be/issues"
+    "url": "https://github.com/ragnermoura/ondish-be/issues"
   },
-  "homepage": "https://github.com/software-precisao/ondish-be#readme",
+  "homepage": "https://github.com/ragnermoura/ondish-be#readme",
   "dependencies": {
-    "express": "^4.19.2"
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "messente_api": "^1.5.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.3.0",
+    "node-schedule": "^2.1.1",
+    "nodemailer": "^6.9.8",
+    "nodemon": "^3.0.1",
+    "pm2": "^5.3.0",
+    "qrcode": "^1.5.3",
+    "sequelize": "^6.31.1",
+    "serialport": "^12.0.0",
+    "sqlite3": "^5.1.6",
+    "stripe": "^16.1.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "twilio": "^4.23.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "swagger-autogen": "^2.23.7"
   }
 }

@@ -1,0 +1,22 @@
+{
+  "name": "ondish-be",
+  "version": "1.0.0",
+  "description": "BackEnd do projeto Ondish",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/software-precisao/ondish-be.git"
+  },
+  "author": "Team Precisão",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/software-precisao/ondish-be/issues"
+  },
+  "homepage": "https://github.com/software-precisao/ondish-be#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

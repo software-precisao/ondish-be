@@ -1,7 +1,8 @@
 const Mesa = require("../models/tb_mesa");
 const Restaurante = require("../models/tb_restaurante");
+const StatusMesa = require("../models/tb_status_mesa");
 
-// Create (POST)
+
 const criarMesa = async (req, res) => {
   const { numero, capacidade, id_restaurante, localizacao } = req.body;
   try {
@@ -31,8 +32,6 @@ const criarMesa = async (req, res) => {
   }
 };
 
-
-// Read (GET all)
 const listarMesas = async (req, res) => {
   try {
     const mesas = await Mesa.findAll({
@@ -44,7 +43,6 @@ const listarMesas = async (req, res) => {
   }
 };
 
-// Read (GET by ID)
 const obterMesa = async (req, res) => {
   const { id } = req.params;
   try {
@@ -66,21 +64,21 @@ const obterMesasPorRestaurante = async (req, res) => {
   try {
     const mesas = await Mesa.findAll({
       where: { id_restaurante },
-      include: [{ model: Restaurante, as: "restaurante" }],
+      include: [
+        { model: Restaurante, as: "restaurante" },
+        { model: StatusMesa, as: "status_mesa" },
+      ],
     });
     if (mesas.length > 0) {
       res.status(200).json(mesas);
     } else {
-      res
-        .status(404)
-        .json({ error: "Nenhuma mesa encontrada para este restaurante" });
+      res.status(404).json({ error: "Nenhuma mesa encontrada para este restaurante" });
     }
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
-// Update (PUT)
 const atualizarMesa = async (req, res) => {
   const { id } = req.params;
   const { numero, capacidade, id_restaurante } = req.body;
@@ -100,7 +98,6 @@ const atualizarMesa = async (req, res) => {
   }
 };
 
-// Delete (DELETE)
 const deletarMesa = async (req, res) => {
   const { id } = req.params;
   try {

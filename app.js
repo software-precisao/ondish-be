@@ -12,7 +12,7 @@
   const Opcoes = require("./models/tb_opcoes");
   const Avaliacao = require("./models/tb_avaliacao");
   const Cozinha = require("./models/tb_cozinha_restaurante");
-  const CozinhaRestaurante = require("./models/tb_cozinha_restaurante");
+;
   const Fotos = require("./models/tb_foto_pratos");
   const Bebidas = require("./models/tb_bebidas");
   const FotosBebidas = require("./models/tb_foto_bebidas");
@@ -33,7 +33,6 @@
     as: "cozinha_restaurante",
   });
 
-
   Restaurante.hasMany(Avaliacao, {
     foreignKey: "id_restaurante",
     as: "avaliacoes",
@@ -43,7 +42,6 @@
     foreignKey: "id_pratos",
     as: "fotos",
   });
-
 
   Bebidas.hasMany(FotosBebidas, {
     foreignKey: "id_bebidas",
@@ -77,7 +75,6 @@
 
   app.use("/public", express.static("public"));
 
-
   // Configurações de CORS
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -98,11 +95,10 @@
   });
 
 
-
   const swaggerOptions = {
     customCss: `
       .swagger-ui .topbar img { content: url('./public/assets/images/logo.png'); height: 40px; }
-    `, // Muda a cor do topo e adiciona a logo
+    `,
     customSiteTitle: 'API Ondish',
     customfavIcon: '/assets/images/favicon.ico',
     customCssUrl: './assets/css/swagger-logo.css',

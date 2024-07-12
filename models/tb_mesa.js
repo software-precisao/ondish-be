@@ -2,6 +2,7 @@ const { Sequelize, DataTypes } = require("sequelize");
 const conn = require("../data/conn");
 
 const Restaurante = require("./tb_restaurante");
+const StatusMesa = require("./tb_status_mesa");
 
 const Mesa = conn.define(
   "tb_mesa",
@@ -35,5 +36,11 @@ Mesa.belongsTo(Restaurante, {
   foreignKey: "id_restaurante",
   as: "restaurante",
 });
+
+Mesa.hasOne(StatusMesa, {
+  foreignKey: "id_status_mesa",
+  as: "status_mesa",
+});
+
 
 module.exports = Mesa;

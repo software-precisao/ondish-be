@@ -67,6 +67,25 @@ const criarPedidoComItens = async (req, res) => {
   }
 };
 
+const obterStatusPedido = async (req, res) => {
+  try {
+    const { id_pedido } = req.params;
+
+    const pedido = await Pedido.findByPk(id_pedido, {
+      attributes: ['status'] // Apenas obtenha o status do pedido
+    });
+
+    if (!pedido) {
+      return res.status(404).send({ mensagem: "Pedido não encontrado." });
+    }
+
+    return res.status(200).send({ status: pedido.status });
+  } catch (error) {
+    console.error("Erro ao obter status do pedido:", error);
+    return res.status(500).send({ error: error.message });
+  }
+};
+
 
 const obterPedido = async (req, res) => {
   try {
@@ -154,4 +173,5 @@ module.exports = {
   criarPedidoComItens,
   obterPedido,
   atualizarStatusPedido,
+  obterStatusPedido
 };

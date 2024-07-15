@@ -86,7 +86,6 @@ const obterStatusPedido = async (req, res) => {
   }
 };
 
-
 const obterPedido = async (req, res) => {
   try {
     const { id_pedido } = req.params;
@@ -96,7 +95,20 @@ const obterPedido = async (req, res) => {
         {
           model: ItensPedido,
           as: "itens_pedido",
-          include: ["prato", "bebida", { model: Opcoes, as: "opcoes" }],
+          include: [
+            {
+              model: Pratos,
+              as: "prato"
+            },
+            {
+              model: Bebida,
+              as: "bebida"
+            },
+            {
+              model: Opcoes,
+              as: "opcoes"
+            }
+          ]
         },
         {
           model: Sala,

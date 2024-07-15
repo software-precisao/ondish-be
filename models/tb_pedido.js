@@ -5,6 +5,7 @@ const Usuario = require("./tb_usuarios");
 const Restaurante = require("./tb_restaurante");
 const Sala = require("./tb_sala");
 const Mesa = require("./tb_mesa");
+const ItensPedido = require("./tb_itens_pedido");
 
 const Pedido = conn.define(
   "tb_pedidos",
@@ -64,6 +65,11 @@ Pedido.belongsTo(Sala, {
 Pedido.belongsTo(Mesa, {
   foreignKey: "id_mesa",
   as: "mesa",
+});
+
+Pedido.hasMany(ItensPedido, {
+  foreignKey: "id_pedido",
+  as: "itens_pedido",
 });
 
 module.exports = Pedido;

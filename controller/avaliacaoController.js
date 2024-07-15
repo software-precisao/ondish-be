@@ -106,7 +106,6 @@ const atualizarAvaliacao = async (req, res) => {
   }
 };
 
-// Deletar uma avaliação
 const deletarAvaliacao = async (req, res) => {
   try {
     const { id } = req.params;

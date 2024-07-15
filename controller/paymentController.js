@@ -1,52 +1,52 @@
-// controllers/paymentController.js
-const stripe = require('../utils/stripeConfig');
+const Stripe = require('stripe');
+const dotenv = require('dotenv');
 
-const createPaymentSession = async (req, res) => {
+dotenv.config();
+
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+const processPayment = async (req, res) => {
+  const { id_pedido, valor_total, nome, email, cardNumber, expMonth, expYear, cvc } = req.body;
+
   try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: req.body.items,
-      mode: 'payment',
-      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+    // Criar um token de cartão
+    const token = await stripe.tokens.create({
+      card: {
+        number: cardNumber,
+        exp_month: expMonth,
+        exp_year: expYear,
+        cvc: cvc,
+      },
     });
-    res.status(200).json({ id: session.id });
+
+    // Criar um cliente no Stripe
+    const customer = await stripe.customers.create({
+      name: nome,
+      email: email,
+      source: token.id,
+    });
+
+    // Criar um pagamento com o Stripe
+    const charge = await stripe.charges.create({
+      amount: Math.round(valor_total * 100), // Converter para centavos
+      currency: 'eur', // Usar euros
+      customer: customer.id,
+      description: `Pagamento para o pedido ${id_pedido}`,
+    });
+
+    // Aqui você pode atualizar o status do pedido no banco de dados
+
+    res.status(200).send({
+      mensagem: 'Pagamento realizado com sucesso!',
+      chargeId: charge.id,
+      chargeStatus: charge.status,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Erro ao processar pagamento:', error);
+    res.status(500).send({ mensagem: 'Erro ao processar pagamento', error: error.message });
   }
-};
-
-const handleWebhook = async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  // Handle the event
-  switch (event.type) {
-    case 'checkout.session.completed':
-      const session = event.data.object;
-      // Fulfill the purchase...
-      handleCheckoutSession(session);
-      break;
-    // ... handle other event types
-    default:
-      console.log(`Unhandled event type ${event.type}`);
-  }
-
-  res.status(200).end();
-};
-
-const handleCheckoutSession = (session) => {
-
-  console.log('Payment was successful!', session);
 };
 
 module.exports = {
-  createPaymentSession,
-  handleWebhook,
+  processPayment,
 };

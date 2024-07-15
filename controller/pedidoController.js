@@ -1,12 +1,12 @@
 const Pedido = require("../models/tb_pedido");
-const { ItensPedido, ItensPedidoOpcoes } = require("../models/tb_itens_pedido");
+const ItensPedido = require("../models/tb_itens_pedido");
+const ItensPedidoOpcoes = require("../models/tb_itens_pedido");
 const Pratos = require("../models/tb_pratos");
 const Opcoes = require("../models/tb_opcoes");
 const Bebida = require("../models/tb_bebidas");
 const Sala = require("../models/tb_sala");
 const Mesa = require("../models/tb_mesa");
 const Usuario = require("../models/tb_usuarios");
-
 
 const gerarNumeroPedido = () => {
   return Math.floor(Math.random() * 90000) + 10000;

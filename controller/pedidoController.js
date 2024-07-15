@@ -14,7 +14,8 @@ const gerarNumeroPedido = () => {
 
 const criarPedidoComItens = async (req, res) => {
   try {
-    const { id_sala, id_usuario, id_restaurante, status, id_mesa, itens } = req.body;
+    const { id_sala, id_usuario, id_restaurante, status, id_mesa, itens } =
+      req.body;
 
     const numero_pedido = gerarNumeroPedido();
 
@@ -36,7 +37,8 @@ const criarPedidoComItens = async (req, res) => {
 
       if (id_prato) {
         const prato = await Pratos.findByPk(id_prato);
-        if (!prato) return res.status(404).send({ mensagem: "Prato não encontrado." });
+        if (!prato)
+          return res.status(404).send({ mensagem: "Prato não encontrado." });
         valor = prato.valor;
       }
 
@@ -55,7 +57,8 @@ const criarPedidoComItens = async (req, res) => {
 
       if (id_bebida) {
         const bebida = await Bebida.findByPk(id_bebida);
-        if (!bebida) return res.status(404).send({ mensagem: "Bebida não encontrada." });
+        if (!bebida)
+          return res.status(404).send({ mensagem: "Bebida não encontrada." });
         valor += bebida.valor;
       }
 
@@ -170,7 +173,12 @@ const atualizarStatusPedido = async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao atualizar status do pedido:", error);
-    return res.status(500).send({ mensagem: "Erro ao atualizar status do pedido", error: error.message });
+    return res
+      .status(500)
+      .send({
+        mensagem: "Erro ao atualizar status do pedido",
+        error: error.message,
+      });
   }
 };
 

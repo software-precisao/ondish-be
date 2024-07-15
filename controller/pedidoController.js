@@ -86,75 +86,75 @@ const obterStatusPedido = async (req, res) => {
   }
 };
 
-const obterPedido = async (req, res) => {
-  try {
-    const { id_pedido } = req.params;
+// const obterPedido = async (req, res) => {
+//   try {
+//     const { id_pedido } = req.params;
 
-    const pedido = await Pedido.findByPk(id_pedido, {
-      include: [
-        {
-          model: ItensPedido,
-          as: "itens_pedido",
-          include: [
-            {
-              model: Pratos,
-              as: "prato"
-            },
-            {
-              model: Bebida,
-              as: "bebida"
-            },
-            {
-              model: Opcoes,
-              as: "opcoes"
-            }
-          ]
-        },
-        {
-          model: Sala,
-          as: "sala",
-          include: [
-            {
-              model: Mesa,
-              as: "mesas",
-            },
-          ],
-        },
-        {
-          model: Usuario,
-          as: "usuario",
-        },
-        {
-          model: Restaurante,
-          as: "restaurante",
-        },
-        {
-          model: Mesa,
-          as: "mesa",
-        },
-      ],
-    });
+//     const pedido = await Pedido.findByPk(id_pedido, {
+//       include: [
+//         {
+//           model: ItensPedido,
+//           as: "itens_pedido",
+//           include: [
+//             {
+//               model: Pratos,
+//               as: "prato"
+//             },
+//             {
+//               model: Bebida,
+//               as: "bebida"
+//             },
+//             {
+//               model: Opcoes,
+//               as: "opcoes"
+//             }
+//           ]
+//         },
+//         {
+//           model: Sala,
+//           as: "sala",
+//           include: [
+//             {
+//               model: Mesa,
+//               as: "mesas",
+//             },
+//           ],
+//         },
+//         {
+//           model: Usuario,
+//           as: "usuario",
+//         },
+//         {
+//           model: Restaurante,
+//           as: "restaurante",
+//         },
+//         {
+//           model: Mesa,
+//           as: "mesa",
+//         },
+//       ],
+//     });
 
-    if (!pedido) {
-      return res.status(404).send({ mensagem: "Pedido não encontrado." });
-    }
+//     if (!pedido) {
+//       return res.status(404).send({ mensagem: "Pedido não encontrado." });
+//     }
 
-    const response = {
-      pedido,
-      status: pedido.status,
-      itens: pedido.itens_pedido,
-      sala: pedido.sala,
-      mesas: pedido.sala?.mesas,
-      usuario: pedido.usuario,
-      valor_total: pedido.valor_total,
-    };
+//     const response = {
+//       pedido,
+//       status: pedido.status,
+//       itens: pedido.itens_pedido,
+//       sala: pedido.sala,
+//       mesas: pedido.sala?.mesas,
+//       usuario: pedido.usuario,
+//       valor_total: pedido.valor_total,
+//     };
 
-    return res.status(200).send(response);
-  } catch (error) {
-    console.error("Erro ao obter pedido:", error);
-    return res.status(500).send({ error: error.message });
-  }
-};
+//     return res.status(200).send(response);
+//   } catch (error) {
+//     console.error("Erro ao obter pedido:", error);
+//     return res.status(500).send({ error: error.message });
+//   }
+// };
 
 const atualizarStatusPedido = async (req, res) => {
   try {
@@ -183,7 +183,7 @@ const atualizarStatusPedido = async (req, res) => {
 
 module.exports = {
   criarPedidoComItens,
-  obterPedido,
+  // obterPedido,
   atualizarStatusPedido,
   obterStatusPedido
 };

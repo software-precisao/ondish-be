@@ -3,6 +3,7 @@ const fs = require("fs").promises;
 const nodemailer = require("nodemailer");
 require('dotenv').config();
 
+
 const enviarBoasVindas = async (req, res) => {
     const { email, nome } = req.body;
     try {

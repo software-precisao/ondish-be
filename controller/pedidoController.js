@@ -1,6 +1,7 @@
 const Pedido = require("../models/tb_pedido");
 const ItensPedido = require("../models/tb_itens_pedido");
 const ItensPedidoOpcoes = require("../models/tb_itens_pedido_opcoes");
+const Restaurante = require("../models/tb_restaurante");
 const Pratos = require("../models/tb_pratos");
 const Opcoes = require("../models/tb_opcoes");
 const Bebida = require("../models/tb_bebidas");

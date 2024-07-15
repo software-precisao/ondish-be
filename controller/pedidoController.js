@@ -1,11 +1,12 @@
 const Pedido = require("../models/tb_pedido");
-const ItensPedido = require("../models/tb_itens_pedido");
+const { ItensPedido, ItensPedidoOpcoes } = require("../models/tb_itens_pedido");
 const Pratos = require("../models/tb_pratos");
 const Opcoes = require("../models/tb_opcoes");
 const Bebida = require("../models/tb_bebidas");
 const Sala = require("../models/tb_sala");
 const Mesa = require("../models/tb_mesa");
 const Usuario = require("../models/tb_usuarios");
+
 
 const gerarNumeroPedido = () => {
   return Math.floor(Math.random() * 90000) + 10000;
@@ -58,6 +59,7 @@ const criarPedidoComItens = async (req, res) => {
         valor = bebida.valor;
       }
 
+      // Cria o item do pedido e aguarda sua criação completa
       const novoItem = await ItensPedido.create({
         id_pedido: pedido.id_pedido,
         id_prato,
@@ -67,6 +69,7 @@ const criarPedidoComItens = async (req, res) => {
         observacoes: instruction,
       });
 
+      // Depois que o item do pedido foi criado, então cria as relações com as opções
       if (Array.isArray(parsedOpcoes)) {
         await Promise.all(
           parsedOpcoes.map(async (opcaoId) => {
@@ -135,7 +138,7 @@ const obterPedido = async (req, res) => {
       sala: pedido.sala,
       mesa: pedido.mesa,
       usuario: pedido.usuario,
-      total: pedido.valor_total,
+      valor_total: pedido.valor_total,
     };
 
     return res.status(200).send(response);

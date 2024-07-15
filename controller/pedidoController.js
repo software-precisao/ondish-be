@@ -14,8 +14,7 @@ const gerarNumeroPedido = () => {
 
 const criarPedidoComItens = async (req, res) => {
   try {
-    const { id_sala, id_usuario, id_restaurante, status, id_mesa, itens } =
-      req.body;
+    const { id_sala, id_usuario, id_restaurante, status, id_mesa, valor_total, itens } = req.body;
 
     const numero_pedido = gerarNumeroPedido();
 
@@ -25,54 +24,25 @@ const criarPedidoComItens = async (req, res) => {
       id_restaurante,
       status,
       id_mesa,
-      valor_total: 0,
+      valor_total,
       numero_pedido,
     });
 
-    let valor_total = 0;
-
     for (const item of itens) {
       const { id_prato, id_bebida, quantidade, instruction, opcoes } = item;
-      let valor = 0;
 
-      if (id_prato) {
-        const prato = await Pratos.findByPk(id_prato);
-        if (!prato)
-          return res.status(404).send({ mensagem: "Prato não encontrado." });
-        valor = prato.valor;
-      }
-
-      const parsedOpcoes = opcoes ? JSON.parse(opcoes) : [];
-
-      if (Array.isArray(parsedOpcoes)) {
-        await Promise.all(
-          parsedOpcoes.map(async (opcaoId) => {
-            const opcao = await Opcoes.findByPk(opcaoId);
-            if (opcao) {
-              valor += parseFloat(opcao.valorAdicional);
-            }
-          })
-        );
-      }
-
-      if (id_bebida) {
-        const bebida = await Bebida.findByPk(id_bebida);
-        if (!bebida)
-          return res.status(404).send({ mensagem: "Bebida não encontrada." });
-        valor += bebida.valor;
-      }
-
-      // Cria o item do pedido e aguarda sua criação completa
+      // Cria o item do pedido
       const novoItem = await ItensPedido.create({
         id_pedido: pedido.id_pedido,
         id_prato,
         id_bebida,
         quantidade,
-        valor: valor * quantidade,
+        valor: item.valor, // Certifique-se de que o valor está sendo enviado no item
         observacoes: instruction,
       });
 
-      // Depois que o item do pedido foi criado, então cria as relações com as opções
+      // Cria as relações com as opções, se houver
+      const parsedOpcoes = opcoes ? JSON.parse(opcoes) : [];
       if (Array.isArray(parsedOpcoes)) {
         await Promise.all(
           parsedOpcoes.map(async (opcaoId) => {
@@ -83,17 +53,12 @@ const criarPedidoComItens = async (req, res) => {
           })
         );
       }
-
-      valor_total += novoItem.valor;
     }
-
-    pedido.valor_total = valor_total;
-    await pedido.save();
 
     return res.status(201).send({
       mensagem: "Pedido criado com sucesso!",
       pedido,
-      valor_total: pedido.valor_total, // Inclui o valor total na resposta
+      valor_total: pedido.valor_total,
     });
   } catch (error) {
     console.error("Erro ao criar pedido:", error);
@@ -173,12 +138,7 @@ const atualizarStatusPedido = async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao atualizar status do pedido:", error);
-    return res
-      .status(500)
-      .send({
-        mensagem: "Erro ao atualizar status do pedido",
-        error: error.message,
-      });
+    return res.status(500).send({ mensagem: "Erro ao atualizar status do pedido", error: error.message });
   }
 };
 

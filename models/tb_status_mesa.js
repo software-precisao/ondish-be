@@ -23,10 +23,6 @@ const StatusMesa = conn.define(
   { freezeTableName: true }
 );
 
-StatusMesa.belongsTo(Mesa, {
-  foreignKey: "id_mesa",
-  as: "mesa",
-});
 
 
 module.exports = StatusMesa;

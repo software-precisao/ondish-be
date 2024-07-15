@@ -95,6 +95,18 @@
   });
 
 
+  const syncModels = async () => {
+    try {
+      await conn.sync({ force: true });
+      console.log('Models synchronized successfully.');
+    } catch (error) {
+      console.error('Error synchronizing models:', error);
+    }
+  };
+  
+  syncModels();
+
+
   const swaggerOptions = {
     customCss: `
       .swagger-ui .topbar img { content: url('./public/assets/images/logo.png'); height: 40px; }

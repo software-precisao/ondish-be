@@ -21,7 +21,7 @@ const Mesa = conn.define(
       allowNull: false,
     },
     localizacao: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,  // Alterado para STRING se for um texto, ajuste conforme necessário
       allowNull: false,
     },
     id_restaurante: {
@@ -37,10 +37,9 @@ Mesa.belongsTo(Restaurante, {
   as: "restaurante",
 });
 
-Mesa.hasOne(StatusMesa, {
-  foreignKey: "id_status_mesa",
+Mesa.hasMany(StatusMesa, {
+  foreignKey: "id_mesa",
   as: "status_mesa",
 });
-
 
 module.exports = Mesa;

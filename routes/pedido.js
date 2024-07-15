@@ -1,9 +1,10 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const pedidoController = require("../controller/pedidoController");
+const pedidosController = require('../controller/pedidoController');
 
-router.post("/novo", pedidoController.criarPedido);
-router.post("/item", pedidoController.adicionarItemPedido);
-router.get("/:id_pedido", pedidoController.obterPedido);
+router.post('/novo', pedidosController.criarPedidoComItens);
+router.post('/itens', pedidosController.obterPedido);
+router.get('/meu-pedido/:id_pedido', pedidosController.obterPedido);
+router.put('/edit/status', pedidosController.atualizarStatusPedido);
 
 module.exports = router;

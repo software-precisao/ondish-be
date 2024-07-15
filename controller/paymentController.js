@@ -5,48 +5,37 @@ dotenv.config();
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
-const processPayment = async (req, res) => {
-  const { id_pedido, valor_total, nome, email, cardNumber, expMonth, expYear, cvc } = req.body;
+const calculateOrderAmount = (items) => {
+  // Substitua este cálculo pelo cálculo real do valor do pedido
+  let total = 0;
+  items.forEach(item => {
+    total += item.price * item.quantity;
+  });
+  return total * 100; // Converter para centavos
+};
+
+const createPaymentIntent = async (req, res) => {
+  const { items } = req.body;
 
   try {
-    // Criar um token de cartão
-    const token = await stripe.tokens.create({
-      card: {
-        number: cardNumber,
-        exp_month: expMonth,
-        exp_year: expYear,
-        cvc: cvc,
+    // Criar um PaymentIntent com o valor do pedido e a moeda
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: calculateOrderAmount(items),
+      currency: 'eur',
+      automatic_payment_methods: {
+        enabled: true,
       },
     });
 
-    // Criar um cliente no Stripe
-    const customer = await stripe.customers.create({
-      name: nome,
-      email: email,
-      source: token.id,
-    });
-
-    // Criar um pagamento com o Stripe
-    const charge = await stripe.charges.create({
-      amount: Math.round(valor_total * 100), // Converter para centavos
-      currency: 'eur', // Usar euros
-      customer: customer.id,
-      description: `Pagamento para o pedido ${id_pedido}`,
-    });
-
-    // Aqui você pode atualizar o status do pedido no banco de dados
-
-    res.status(200).send({
-      mensagem: 'Pagamento realizado com sucesso!',
-      chargeId: charge.id,
-      chargeStatus: charge.status,
+    res.send({
+      clientSecret: paymentIntent.client_secret,
     });
   } catch (error) {
-    console.error('Erro ao processar pagamento:', error);
-    res.status(500).send({ mensagem: 'Erro ao processar pagamento', error: error.message });
+    console.error('Erro ao criar PaymentIntent:', error);
+    res.status(500).send({ mensagem: 'Erro ao criar PaymentIntent', error: error.message });
   }
 };
 
 module.exports = {
-  processPayment,
+  createPaymentIntent,
 };

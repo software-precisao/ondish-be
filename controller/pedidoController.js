@@ -1,6 +1,6 @@
 const Pedido = require("../models/tb_pedido");
 const ItensPedido = require("../models/tb_itens_pedido");
-const ItensPedidoOpcoes = require("../models/tb_itens_pedido");
+const ItensPedidoOpcoes = require("../models/tb_itens_pedido_opcoes");
 const Pratos = require("../models/tb_pratos");
 const Opcoes = require("../models/tb_opcoes");
 const Bebida = require("../models/tb_bebidas");
@@ -40,7 +40,7 @@ const criarPedidoComItens = async (req, res) => {
         valor = prato.valor;
       }
 
-      const parsedOpcoes = JSON.parse(opcoes);
+      const parsedOpcoes = opcoes ? JSON.parse(opcoes) : [];
 
       if (Array.isArray(parsedOpcoes)) {
         await Promise.all(
@@ -56,7 +56,7 @@ const criarPedidoComItens = async (req, res) => {
       if (id_bebida) {
         const bebida = await Bebida.findByPk(id_bebida);
         if (!bebida) return res.status(404).send({ mensagem: "Bebida não encontrada." });
-        valor = bebida.valor;
+        valor += bebida.valor;
       }
 
       // Cria o item do pedido e aguarda sua criação completa
@@ -90,6 +90,7 @@ const criarPedidoComItens = async (req, res) => {
     return res.status(201).send({
       mensagem: "Pedido criado com sucesso!",
       pedido,
+      valor_total: pedido.valor_total, // Inclui o valor total na resposta
     });
   } catch (error) {
     console.error("Erro ao criar pedido:", error);

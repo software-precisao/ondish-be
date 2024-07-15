@@ -67,6 +67,7 @@ const criarPedidoComItens = async (req, res) => {
   }
 };
 
+
 const obterPedido = async (req, res) => {
   try {
     const { id_pedido } = req.params;
@@ -81,7 +82,12 @@ const obterPedido = async (req, res) => {
         {
           model: Sala,
           as: "sala",
-          include: ["mesa"],
+          include: [
+            {
+              model: Mesa,
+              as: "mesas",
+            },
+          ],
         },
         {
           model: Usuario,
@@ -104,9 +110,10 @@ const obterPedido = async (req, res) => {
 
     const response = {
       pedido,
+      status: pedido.status,
       itens: pedido.itens_pedido,
       sala: pedido.sala,
-      mesa: pedido.mesa,
+      mesas: pedido.sala?.mesas,
       usuario: pedido.usuario,
       valor_total: pedido.valor_total,
     };

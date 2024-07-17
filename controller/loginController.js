@@ -83,7 +83,6 @@ const autenticarUsuarioApp = async (req, res, next) => {
   }
 };
 
-
 const autenticarUsuarioRestaurante = async (req, res, next) => {
   try {
     const { email, senha } = req.body;

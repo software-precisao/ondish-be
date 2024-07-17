@@ -22,7 +22,7 @@ const criarUsuario = async (req, res, next) => {
       });
     }
     const hashedPassword = await bcrypt.hash(req.body.senha, 10);
-      const filename = req.files.avatar
+    const filename = req.files.avatar
       ? req.files.avatar[0].filename
       : "default-avatar.png";
 
@@ -34,7 +34,6 @@ const criarUsuario = async (req, res, next) => {
       id_nivel: 3,
       id_status: 1,
       avatar: `/avatar/${filename}`,
-      
     });
 
     const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
@@ -156,6 +155,96 @@ const criarUsuarioRestaurante = async (req, res, next) => {
     return res.status(500).send({ error: error.message });
   }
 };
+const atualizarSenhaUsuario = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { senha } = req.body;
+
+    if (!senha) {
+      return res.status(400).send({
+        mensagem: "A senha é obrigatória!",
+      });
+    }
+
+    const usuario = await Usuario.findByPk(id);
+    if (!usuario) {
+      return res.status(404).send({
+        mensagem: "Usuário não encontrado!",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(senha, 10);
+    await usuario.update({ senha: hashedPassword });
+
+    res.status(200).send({
+      mensagem: "Senha atualizada com sucesso!",
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar senha:", error);
+    return res.status(500).send({ error: error.message });
+  }
+};
+const recuperarSenha = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const usuarioExistente = await Usuario.findOne({
+      where: { email },
+    });
+
+    if (!usuarioExistente) {
+      return res.status(404).send({
+        mensagem: "Email não encontrado!",
+      });
+    }
+
+    const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const code = await Code.create({
+      type_code: 2,
+      code: codigoAleatorio,
+      id_user: usuarioExistente.id_user,
+    });
+
+    const htmlFilePath = path.join(__dirname, "../template/code/index.html");
+    let htmlContent = await fs.readFile(htmlFilePath, "utf8");
+
+    htmlContent = htmlContent
+      .replace("{{nome}}", usuarioExistente.nome)
+      .replace("{{email}}", usuarioExistente.email)
+      .replace("{{code}}", code.code);
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        ciphers: "TLSv1",
+      },
+    });
+
+    let mailOptions = {
+      from: `"Equipa Ondish Foods" ${process.env.EMAIL_FROM}`,
+      to: email,
+      subject: "🔒 Código de Recuperação de Senha Ondish!`,",
+      html: htmlContent,
+    };
+
+    let info = await transporter.sendMail(mailOptions);
+    console.log("Mensagem enviada: %s", info.messageId);
+
+    return res.status(200).send({
+      mensagem: "Código de recuperação enviado com sucesso!",
+      id_user: usuarioExistente.id_user
+    });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
 const verificarCodigo = async (req, res) => {
   try {
     const { id_user, code } = req.body;
@@ -208,16 +297,23 @@ const atualizarUsuario = async (req, res, next) => {
       "Requisição recebida para atualizar usuário com ID:",
       req.params.id_user
     );
-    const [updated] = await Usuario.update(req.body, {
-      where: { id_user: req.params.id_user },
-    });
-    if (updated) {
-      const updatedUsuario = await Usuario.findByPk(req.params.id_user);
-      res.status(200).send(updatedUsuario);
-    } else {
+
+    const usuario = await Usuario.findByPk(req.params.id_user);
+    if (!usuario) {
       console.log("Usuário não encontrado para o ID:", req.params.id_user);
-      res.status(404).send({ message: "Usuário não encontrado" });
+      return res.status(404).send({ message: "Usuário não encontrado" });
     }
+
+    if (req.files && req.files.avatar) {
+      req.body.avatar = `/avatar/${req.files.avatar[0].filename}`;
+    }
+
+    await usuario.update(req.body);
+
+    res.status(200).send({
+      mensagem: "Usuário atualizado com sucesso!",
+      usuarioAtualizado: usuario,
+    });
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
     next(error);
@@ -241,9 +337,11 @@ const deletarUsuario = async (req, res, next) => {
 module.exports = {
   criarUsuario,
   criarUsuarioRestaurante,
+  recuperarSenha,
   verificarCodigo,
   obterUsuarios,
   obterUsuarioPorId,
   atualizarUsuario,
+  atualizarSenhaUsuario,
   deletarUsuario,
 };

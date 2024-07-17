@@ -55,6 +55,7 @@ const {uploadFields} = require('../helpers/img-uploader');
  *       500:
  *         description: Erro interno do servidor
  */
+
 router.post('/cadastrar', uploadFields, usuarioController.criarUsuario);
 
 /**
@@ -226,7 +227,9 @@ router.get('/:id', usuarioController.obterUsuarioPorId);
  *       500:
  *         description: Erro interno do servidor
  */
-router.put('/edit/:id_user', usuarioController.atualizarUsuario);
+router.put('/edit/:id_user', uploadFields, usuarioController.atualizarUsuario);
+router.put('/edit/senha/:id', usuarioController.atualizarSenhaUsuario);
+router.post('/valida-email', usuarioController.recuperarSenha);
 
 /**
  * @swagger

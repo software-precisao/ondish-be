@@ -334,6 +334,8 @@ const deletarUsuario = async (req, res, next) => {
   }
 };
 
+
+
 module.exports = {
   criarUsuario,
   criarUsuarioRestaurante,

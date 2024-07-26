@@ -11,6 +11,7 @@ const pratosController = {
         tipo_prato: req.body.tipo_prato,
         titulo: req.body.titulo,
         descricao: req.body.descricao,
+        tempo_preparo: req.body.tempo_preparo,
         valor: req.body.valor,
         taxa_ondish: req.body.taxa,
         id_cozinha_restaurante: req.body.id_cozinha,

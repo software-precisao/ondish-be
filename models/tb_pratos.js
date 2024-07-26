@@ -17,6 +17,10 @@ const Pratos = conn.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    tempo_preparo: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     titulo: {
       type: DataTypes.STRING,
       allowNull: true,

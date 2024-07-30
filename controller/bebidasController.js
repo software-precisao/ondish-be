@@ -57,7 +57,7 @@ const bebidasController = {
         include: [
           {
             model: Imagem,
-            as: "fotos",
+            as: "imagens",
           },
         ],
       });

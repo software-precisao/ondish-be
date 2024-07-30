@@ -2,6 +2,7 @@ const Restaurante = require("../models/tb_restaurante");
 const Sala = require("../models/tb_sala");
 const SalaConvidado = require("../models/tb_sala_convidado");
 const Usuario = require("../models/tb_usuarios");
+const AtividadeSala = require("../models/tb_atividades_sala");
 
 const nodemailer = require("nodemailer");
 const path = require("path");
@@ -38,6 +39,15 @@ const criarSala = async (req, res) => {
       status,
     });
 
+    await AtividadeSala.create({
+      id_sala: novaSala.id_sala,
+      id_restaurante: novaSala.id_restaurante,
+      descricao: 'Acabou de criar uma sala',
+      status: 1
+    });
+
+
+   
     // Adicionar os convidados
     if (Array.isArray(convidados)) {
       await Promise.all(
@@ -331,6 +341,13 @@ const deletarSala = async (req, res) => {
 
     await SalaConvidado.destroy({ where: { id_sala: id } });
     await sala.destroy();
+
+    await AtividadeSala.create({
+      id_sala: sala.id_sala,
+      id_restaurante: sala.id_restaurante,
+      descricao: 'Convivio terminado.',
+      status: 1
+    });
 
     res
       .status(200)

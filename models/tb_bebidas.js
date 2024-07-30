@@ -20,12 +20,12 @@ const Bebida = conn.define(
       allowNull: true,
     },
     descricao: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     valor: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
+      allowNull: false,
     },
     id_restaurante: {
       type: DataTypes.INTEGER,
@@ -39,5 +39,8 @@ Bebida.belongsTo(Restaurante, {
   foreignKey: "id_restaurante",
   as: "restaurante",
 });
+
+
+
 
 module.exports = Bebida;

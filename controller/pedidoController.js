@@ -129,12 +129,6 @@ const obterPedido = async (req, res) => {
         {
           model: Sala,
           as: "sala",
-          include: [
-            {
-              model: Mesa,
-              as: "mesas",
-            },
-          ],
         },
         {
           model: Usuario,
@@ -144,10 +138,7 @@ const obterPedido = async (req, res) => {
           model: Restaurante,
           as: "restaurante",
         },
-        {
-          model: Mesa,
-          as: "mesa",
-        },
+       
       ],
     });
 
@@ -180,18 +171,36 @@ const obterPedidoRestaurante = async (req, res) => {
       where: { id_restaurante },
       include: [
         {
+          model: ItensPedido,
+          as: "itens_pedido",
+          include: [
+            {
+              model: Pratos,
+              as: "prato",
+            },
+            {
+              model: Bebida,
+              as: "bebida",
+            },
+            {
+              model: Opcoes,
+              as: "opcoes",
+            },
+          ],
+        },
+        {
           model: Sala,
           as: "sala",
-          include: [{ model: Usuario, as: "anfitriao" }],
+        },
+        {
+          model: Usuario,
+          as: "usuario",
         },
         {
           model: Restaurante,
           as: "restaurante",
         },
-        {
-          model: Pratos,
-          as: "prato",
-        },
+       
       ],
     });
 

@@ -25,7 +25,7 @@ const Opcoes = conn.define(
       allowNull: true,
     },
     obrigatorio: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BOOLEAN,
       allowNull: false,
     },
     id_pratos: {

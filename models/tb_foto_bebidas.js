@@ -25,10 +25,15 @@ const FotoBebidas = conn.define(
 
 // Importar o modelo Bebida após definir FotoBebidas
 
-
 FotoBebidas.belongsTo(Bebida, {
   foreignKey: "id_bebida",
   as: "bebida",
 });
+
+Bebida.hasMany(FotoBebidas, {
+  foreignKey: "id_bebida",
+  as: "imagens",
+});
+
 
 module.exports = FotoBebidas;

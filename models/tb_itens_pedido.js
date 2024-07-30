@@ -41,10 +41,7 @@ const ItensPedido = conn.define(
   { freezeTableName: true }
 );
 
-ItensPedido.belongsTo(Pedido, {
-  foreignKey: "id_pedido",
-  as: "pedido",
-});
+
 
 ItensPedido.belongsTo(Prato, {
   foreignKey: "id_prato",
@@ -55,5 +52,6 @@ ItensPedido.belongsTo(Bebida, {
   foreignKey: "id_bebida",
   as: "bebida",
 });
+
 
 module.exports = ItensPedido;

@@ -3,8 +3,6 @@ const router = express.Router();
 const bebidasController = require("../controller/bebidasController");
 const { uploadArray } = require("../helpers/img-uploader");
 
-
-// Rota para buscar todas as bebidas com foto por ID do restaurante
 router.post(
   "/cadastro",
   uploadArray,
@@ -14,5 +12,7 @@ router.post(
   bebidasController.criarBebidas
 );
 router.get("/restaurante/:id", bebidasController.buscarBebidasPorRestaurante);
+router.get("/", bebidasController.obterBebidas);
+router.delete("/delete/:id_bebida", bebidasController.deletarBebida);
 
 module.exports = router;

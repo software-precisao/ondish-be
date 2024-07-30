@@ -57,7 +57,7 @@ const bebidasController = {
         include: [
           {
             model: Imagem,
-            as: "fotos",
+            as: "imagens",
           },
         ],
       });
@@ -77,6 +77,49 @@ const bebidasController = {
       });
     }
   },
+
+  obterBebidas: async (req, res) => {
+    try {
+      const bebidas = await Bebidas.findAll({
+        include: [{ model: Imagem, as: "imagens" }],
+      });
+
+      if (!bebidas || bebidas.length === 0) {
+        return res.status(404).send({
+          mensagem: "Nenhuma bebida encontrada.",
+        });
+      }
+
+      return res.status(200).send(bebidas);
+    } catch (error) {
+      console.error("Erro ao obter bebidas: ", error);
+      return res.status(500).send({ mensagem: "Erro ao obter bebidas", error: error.message });
+    }
+  },
+
+ deletarBebida: async (req, res) => {
+    const { id_bebida } = req.params;
+
+    try {
+      // Verifica se a bebida existe
+      const bebida = await Bebidas.findByPk(id_bebida);
+      if (!bebida) {
+        return res.status(404).send({ mensagem: "Bebida não encontrada!" });
+      }
+
+      // Deleta as imagens associadas
+      await Imagem.destroy({ where: { id_bebida: id_bebida } });
+
+      // Deleta a bebida
+      await Bebidas.destroy({ where: { id_bebida: id_bebida } });
+
+      return res.status(200).send({ mensagem: "Bebida deletada com sucesso!" });
+    } catch (error) {
+      console.error("Erro ao deletar bebida: ", error);
+      return res.status(500).send({ mensagem: "Erro ao deletar bebida", error: error.message });
+    }
+  },
 };
+
 
 module.exports = bebidasController;

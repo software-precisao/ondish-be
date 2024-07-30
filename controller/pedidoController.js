@@ -8,6 +8,7 @@ const Bebida = require("../models/tb_bebidas");
 const Sala = require("../models/tb_sala");
 const Mesa = require("../models/tb_mesa");
 const Usuario = require("../models/tb_usuarios");
+const AtividadePedido = require("../models/tb_atividade_pedido");
 
 const gerarNumeroPedido = () => {
   return Math.floor(Math.random() * 90000) + 10000;
@@ -15,7 +16,15 @@ const gerarNumeroPedido = () => {
 
 const criarPedidoComItens = async (req, res) => {
   try {
-    const { id_sala, id_usuario, id_restaurante, status, id_mesa, valor_total, itens } = req.body;
+    const {
+      id_sala,
+      id_usuario,
+      id_restaurante,
+      status,
+      id_mesa,
+      valor_total,
+      itens,
+    } = req.body;
 
     const numero_pedido = gerarNumeroPedido();
 
@@ -38,8 +47,15 @@ const criarPedidoComItens = async (req, res) => {
         id_prato,
         id_bebida,
         quantidade,
-        valor: item.valor, // Certifique-se de que o valor está sendo enviado no item
+        valor: item.valor,
         observacoes: instruction,
+      });
+
+      await AtividadePedido.create({
+        id_pedido: pedido.id_pedido,
+        id_restaurante: pedido.id_restaurante,
+        descricao: " Um novo Pedido feito,",
+        status: 1,
       });
 
       // Cria as relações com as opções, se houver
@@ -72,7 +88,7 @@ const obterStatusPedido = async (req, res) => {
     const { id_pedido } = req.params;
 
     const pedido = await Pedido.findByPk(id_pedido, {
-      attributes: ['status'] // Apenas obtenha o status do pedido
+      attributes: ["status"], // Apenas obtenha o status do pedido
     });
 
     if (!pedido) {
@@ -86,75 +102,118 @@ const obterStatusPedido = async (req, res) => {
   }
 };
 
-// const obterPedido = async (req, res) => {
-//   try {
-//     const { id_pedido } = req.params;
+const obterPedido = async (req, res) => {
+  try {
+    const { id_pedido } = req.params;
 
-//     const pedido = await Pedido.findByPk(id_pedido, {
-//       include: [
-//         {
-//           model: ItensPedido,
-//           as: "itens_pedido",
-//           include: [
-//             {
-//               model: Pratos,
-//               as: "prato"
-//             },
-//             {
-//               model: Bebida,
-//               as: "bebida"
-//             },
-//             {
-//               model: Opcoes,
-//               as: "opcoes"
-//             }
-//           ]
-//         },
-//         {
-//           model: Sala,
-//           as: "sala",
-//           include: [
-//             {
-//               model: Mesa,
-//               as: "mesas",
-//             },
-//           ],
-//         },
-//         {
-//           model: Usuario,
-//           as: "usuario",
-//         },
-//         {
-//           model: Restaurante,
-//           as: "restaurante",
-//         },
-//         {
-//           model: Mesa,
-//           as: "mesa",
-//         },
-//       ],
-//     });
+    const pedido = await Pedido.findByPk(id_pedido, {
+      include: [
+        {
+          model: ItensPedido,
+          as: "itens_pedido",
+          include: [
+            {
+              model: Pratos,
+              as: "prato",
+            },
+            {
+              model: Bebida,
+              as: "bebida",
+            },
+            {
+              model: Opcoes,
+              as: "opcoes",
+            },
+          ],
+        },
+        {
+          model: Sala,
+          as: "sala",
+        },
+        {
+          model: Usuario,
+          as: "usuario",
+        },
+        {
+          model: Restaurante,
+          as: "restaurante",
+        },
+       
+      ],
+    });
 
-//     if (!pedido) {
-//       return res.status(404).send({ mensagem: "Pedido não encontrado." });
-//     }
+    if (!pedido) {
+      return res.status(404).send({ mensagem: "Pedido não encontrado." });
+    }
 
-//     const response = {
-//       pedido,
-//       status: pedido.status,
-//       itens: pedido.itens_pedido,
-//       sala: pedido.sala,
-//       mesas: pedido.sala?.mesas,
-//       usuario: pedido.usuario,
-//       valor_total: pedido.valor_total,
-//     };
+    const response = {
+      pedido,
+      status: pedido.status,
+      itens: pedido.itens_pedido,
+      sala: pedido.sala,
+      mesas: pedido.sala?.mesas,
+      usuario: pedido.usuario,
+      valor_total: pedido.valor_total,
+    };
 
-//     return res.status(200).send(response);
-//   } catch (error) {
-//     console.error("Erro ao obter pedido:", error);
-//     return res.status(500).send({ error: error.message });
-//   }
-// };
+    return res.status(200).send(response);
+  } catch (error) {
+    console.error("Erro ao obter pedido:", error);
+    return res.status(500).send({ error: error.message });
+  }
+};
+
+const obterPedidoRestaurante = async (req, res) => {
+  try {
+    const { id_restaurante } = req.params;
+
+    const pedidos = await Pedido.findAll({
+      where: { id_restaurante },
+      include: [
+        {
+          model: ItensPedido,
+          as: "itens_pedido",
+          include: [
+            {
+              model: Pratos,
+              as: "prato",
+            },
+            {
+              model: Bebida,
+              as: "bebida",
+            },
+            {
+              model: Opcoes,
+              as: "opcoes",
+            },
+          ],
+        },
+        {
+          model: Sala,
+          as: "sala",
+        },
+        {
+          model: Usuario,
+          as: "usuario",
+        },
+        {
+          model: Restaurante,
+          as: "restaurante",
+        },
+       
+      ],
+    });
+
+    if (!pedidos || pedidos.length === 0) {
+      return res.status(404).send({ mensagem: "Pedido não encontrado." });
+    }
+
+    return res.status(200).send(pedidos);
+  } catch (error) {
+    console.error("Erro ao obter pedido:", error);
+    return res.status(500).send({ error: error.message });
+  }
+};
 
 const atualizarStatusPedido = async (req, res) => {
   try {
@@ -177,13 +236,17 @@ const atualizarStatusPedido = async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao atualizar status do pedido:", error);
-    return res.status(500).send({ mensagem: "Erro ao atualizar status do pedido", error: error.message });
+    return res.status(500).send({
+      mensagem: "Erro ao atualizar status do pedido",
+      error: error.message,
+    });
   }
 };
 
 module.exports = {
   criarPedidoComItens,
-  // obterPedido,
+  obterPedidoRestaurante,
+  obterPedido,
   atualizarStatusPedido,
-  obterStatusPedido
+  obterStatusPedido,
 };

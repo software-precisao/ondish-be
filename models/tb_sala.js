@@ -42,4 +42,5 @@ Sala.belongsTo(Restaurante, {
 
 Sala.belongsTo(Usuario, { as: 'anfitriao', foreignKey: 'id_usuario_anfitriao' });
 
+
 module.exports = Sala;

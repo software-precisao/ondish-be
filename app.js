@@ -17,6 +17,8 @@
   const Bebidas = require("./models/tb_bebidas");
   const FotosBebidas = require("./models/tb_foto_bebidas");
   const { swaggerUi, specs } = require('./swaggerConfig');
+  const Sobremesa = require("./models/tb_sobremesas")
+  const FotoSobremesas = require("./models/tb_foto_sobremesas")
 
   Restaurante.hasMany(Pratos, {
     foreignKey: "id_restaurante",
@@ -48,6 +50,11 @@
     as: "fotos",
   });
 
+  Sobremesa.hasMany(FotoSobremesas, {
+    foreignKey: "id_sobremesa",
+    as: "fotos",
+  });
+
   // Rotas
   const rotaLogin = require("./routes/login");
   const rotaUser = require("./routes/usuario");
@@ -69,6 +76,7 @@
   const rotaPagamento = require("./routes/pagamento");
   const rotaAtividadeSala = require("./routes/atividadeSala");
   const rotaAtividadePedido = require("./routes/atividadePedido");
+  const rotaSobremesa = require("./routes/sobremesa")
 
   app.use(morgan("dev"));
   app.use(bodyParser.urlencoded({ extended: false }));
@@ -139,6 +147,7 @@
   app.use("/payment", rotaPagamento);
   app.use("/atividade-sala", rotaAtividadeSala);
   app.use("/atividade-pedido", rotaAtividadePedido);
+  app.use("/sobremesa", rotaSobremesa)
 
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions))
 

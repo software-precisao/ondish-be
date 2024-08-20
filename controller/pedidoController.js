@@ -26,6 +26,11 @@ const criarPedidoComItens = async (req, res) => {
       itens,
     } = req.body;
 
+    await Mesa.update(
+      { id_status_mesa: 2 },
+      { where: { id_mesa } }
+    );
+
     const numero_pedido = gerarNumeroPedido();
 
     const pedido = await Pedido.create({
@@ -226,6 +231,13 @@ const atualizarStatusPedido = async (req, res) => {
 
     pedido.status = status;
     await pedido.save();
+
+    if (status === "Pago") {
+      await Mesa.update(
+        { id_status_mesa: 1 },
+        { where: { id_mesa: pedido.id_mesa } }
+      );
+    }
 
     return res.status(200).send({
       mensagem: "Status do pedido atualizado com sucesso!",

@@ -11,10 +11,6 @@ const StatusMesa = conn.define(
       autoIncrement: true,
       primaryKey: true,
     },
-    id_mesa: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     status: {
       type: DataTypes.STRING,
       allowNull: false,

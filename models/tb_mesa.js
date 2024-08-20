@@ -21,12 +21,20 @@ const Mesa = conn.define(
       allowNull: false,
     },
     localizacao: {
-      type: DataTypes.STRING,  // Alterado para STRING se for um texto, ajuste conforme necessário
+      type: DataTypes.STRING, 
       allowNull: false,
     },
     id_restaurante: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    id_status_mesa: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: StatusMesa,
+        key: "id_status_mesa",
+      },
     },
   },
   { freezeTableName: true }
@@ -37,8 +45,8 @@ Mesa.belongsTo(Restaurante, {
   as: "restaurante",
 });
 
-Mesa.hasMany(StatusMesa, {
-  foreignKey: "id_mesa",
+Mesa.belongsTo(StatusMesa, {
+  foreignKey: "id_status_mesa",
   as: "status_mesa",
 });
 

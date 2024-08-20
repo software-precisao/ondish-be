@@ -77,6 +77,7 @@
   const rotaAtividadeSala = require("./routes/atividadeSala");
   const rotaAtividadePedido = require("./routes/atividadePedido");
   const rotaSobremesa = require("./routes/sobremesa")
+  const rotaStatusMesa = require("./routes/statusMesa")
 
   app.use(morgan("dev"));
   app.use(bodyParser.urlencoded({ extended: false }));
@@ -148,6 +149,7 @@
   app.use("/atividade-sala", rotaAtividadeSala);
   app.use("/atividade-pedido", rotaAtividadePedido);
   app.use("/sobremesa", rotaSobremesa)
+  app.use("/status-mesa", rotaStatusMesa)
 
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions))
 

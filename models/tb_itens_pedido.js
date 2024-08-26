@@ -4,6 +4,7 @@ const conn = require("../data/conn");
 const Pedido = require("./tb_pedido");
 const Prato = require("./tb_pratos");
 const Bebida = require("./tb_bebidas");
+const Sobremesa = require("./tb_sobremesas");
 
 const ItensPedido = conn.define(
   "tb_itens_pedido",
@@ -25,6 +26,10 @@ const ItensPedido = conn.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    id_sobremesa: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     quantidade: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -41,7 +46,10 @@ const ItensPedido = conn.define(
   { freezeTableName: true }
 );
 
-
+ItensPedido.belongsTo(Sobremesa, {
+  foreignKey: "id_sobremesa",
+  as: "sobremesa",
+});
 
 ItensPedido.belongsTo(Prato, {
   foreignKey: "id_prato",

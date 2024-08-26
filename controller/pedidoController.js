@@ -9,6 +9,7 @@ const Sala = require("../models/tb_sala");
 const Mesa = require("../models/tb_mesa");
 const Usuario = require("../models/tb_usuarios");
 const AtividadePedido = require("../models/tb_atividade_pedido");
+const Sobremesa = require("../models/tb_sobremesas")
 
 const gerarNumeroPedido = () => {
   return Math.floor(Math.random() * 90000) + 10000;
@@ -44,13 +45,13 @@ const criarPedidoComItens = async (req, res) => {
     });
 
     for (const item of itens) {
-      const { id_prato, id_bebida, quantidade, instruction, opcoes } = item;
+      const { id_prato, id_bebida, id_sobremesa, quantidade, instruction, opcoes } = item;
 
-      // Cria o item do pedido
       const novoItem = await ItensPedido.create({
         id_pedido: pedido.id_pedido,
         id_prato,
         id_bebida,
+        id_sobremesa, 
         quantidade,
         valor: item.valor,
         observacoes: instruction,
@@ -63,7 +64,6 @@ const criarPedidoComItens = async (req, res) => {
         status: 1,
       });
 
-      // Cria as relações com as opções, se houver
       const parsedOpcoes = opcoes ? JSON.parse(opcoes) : [];
       if (Array.isArray(parsedOpcoes)) {
         await Promise.all(
@@ -87,6 +87,7 @@ const criarPedidoComItens = async (req, res) => {
     return res.status(500).send({ error: error.message });
   }
 };
+
 
 const obterStatusPedido = async (req, res) => {
   try {
@@ -190,6 +191,10 @@ const obterPedidoRestaurante = async (req, res) => {
             {
               model: Opcoes,
               as: "opcoes",
+            },
+            {
+              model: Sobremesa,
+              as: "sobremesa",
             },
           ],
         },

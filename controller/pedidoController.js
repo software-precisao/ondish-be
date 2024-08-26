@@ -232,7 +232,7 @@ const atualizarStatusPedido = async (req, res) => {
     pedido.status = status;
     await pedido.save();
 
-    if (status === "Pago") {
+    if (status === "Pago" || "Cancelado") {
       await Mesa.update(
         { id_status_mesa: 1 },
         { where: { id_mesa: pedido.id_mesa } }

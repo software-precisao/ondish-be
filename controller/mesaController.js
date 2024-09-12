@@ -1,6 +1,8 @@
 const Mesa = require("../models/tb_mesa");
 const Restaurante = require("../models/tb_restaurante");
 const StatusMesa = require("../models/tb_status_mesa");
+const QRCode = require("qrcode");
+const Qrcode = require("../models/tb_qrcode");
 
 const criarMesa = async (req, res) => {
   const { numero, capacidade, id_restaurante, localizacao } = req.body;
@@ -11,6 +13,17 @@ const criarMesa = async (req, res) => {
       localizacao,
       id_restaurante,
       id_status_mesa: 1,
+    });
+
+    const qrData = `${novaMesa.id_restaurante}|${novaMesa.id_mesa}`;
+    const qrCodeURL = await QRCode.toDataURL(qrData);
+
+    await novaMesa.update({ qrcode: qrCodeURL });
+
+    const novoQrcode = await Qrcode.create({
+      qrcode: qrCodeURL,
+      id_restaurante: novaMesa.id_restaurante,
+      id_mesa: novaMesa.id_mesa,
     });
 
     res.status(201).json(novaMesa);

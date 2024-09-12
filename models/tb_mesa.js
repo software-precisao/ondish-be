@@ -28,6 +28,10 @@ const Mesa = conn.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    qrcode: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     id_status_mesa: {
       type: DataTypes.INTEGER,
       allowNull: false,

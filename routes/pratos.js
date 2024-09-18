@@ -141,7 +141,7 @@ router.post(
  *       500:
  *         description: Erro ao buscar prato
  */
-router.get("/buscar/:id_pratos", pratoController.buscarPratoPorId);
+router.get("/buscar/:id_restaurante", pratoController.buscarPratoPorId);
 
 /**
  * @swagger

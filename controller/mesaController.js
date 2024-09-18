@@ -89,13 +89,14 @@ const obterMesasPorRestaurante = async (req, res) => {
 
 const atualizarMesa = async (req, res) => {
   const { id } = req.params;
-  const { numero, capacidade, id_restaurante } = req.body;
+  const { numero, capacidade, id_restaurante, localizacao } = req.body;
   try {
     const mesa = await Mesa.findByPk(id);
     if (mesa) {
       mesa.numero = numero;
       mesa.capacidade = capacidade;
       mesa.id_restaurante = id_restaurante;
+      mesa.localizacao = localizacao;
       await mesa.save();
       res.status(200).json(mesa);
     } else {

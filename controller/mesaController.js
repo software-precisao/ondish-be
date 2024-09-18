@@ -110,16 +110,19 @@ const deletarMesa = async (req, res) => {
   const { id } = req.params;
   try {
     const mesa = await Mesa.findByPk(id);
-    if (mesa) {
-      await mesa.destroy();
-      res.status(204).json();
-    } else {
-      res.status(404).json({ error: "Mesa não encontrada" });
+    if (!mesa) {
+      return res.status(404).json({ error: "Mesa não encontrada" });
     }
+
+    await Qrcode.destroy({ where: { id_mesa: id } });
+
+    await mesa.destroy();
+    return res.status(200).json({ mensagem: "Mesa deletada com sucesso!" });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
+
 
 module.exports = {
   criarMesa,

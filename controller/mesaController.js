@@ -1,6 +1,8 @@
 const Mesa = require("../models/tb_mesa");
 const Restaurante = require("../models/tb_restaurante");
 const StatusMesa = require("../models/tb_status_mesa");
+const QRCode = require("qrcode");
+const Qrcode = require("../models/tb_qrcode");
 
 const criarMesa = async (req, res) => {
   const { numero, capacidade, id_restaurante, localizacao } = req.body;
@@ -11,6 +13,17 @@ const criarMesa = async (req, res) => {
       localizacao,
       id_restaurante,
       id_status_mesa: 1,
+    });
+
+    const qrData = `${novaMesa.id_restaurante}|${novaMesa.id_mesa}`;
+    const qrCodeURL = await QRCode.toDataURL(qrData);
+
+    await novaMesa.update({ qrcode: qrCodeURL });
+
+    const novoQrcode = await Qrcode.create({
+      qrcode: qrCodeURL,
+      id_restaurante: novaMesa.id_restaurante,
+      id_mesa: novaMesa.id_mesa,
     });
 
     res.status(201).json(novaMesa);
@@ -76,13 +89,14 @@ const obterMesasPorRestaurante = async (req, res) => {
 
 const atualizarMesa = async (req, res) => {
   const { id } = req.params;
-  const { numero, capacidade, id_restaurante } = req.body;
+  const { numero, capacidade, id_restaurante, localizacao } = req.body;
   try {
     const mesa = await Mesa.findByPk(id);
     if (mesa) {
       mesa.numero = numero;
       mesa.capacidade = capacidade;
       mesa.id_restaurante = id_restaurante;
+      mesa.localizacao = localizacao;
       await mesa.save();
       res.status(200).json(mesa);
     } else {
@@ -97,16 +111,19 @@ const deletarMesa = async (req, res) => {
   const { id } = req.params;
   try {
     const mesa = await Mesa.findByPk(id);
-    if (mesa) {
-      await mesa.destroy();
-      res.status(204).json();
-    } else {
-      res.status(404).json({ error: "Mesa não encontrada" });
+    if (!mesa) {
+      return res.status(404).json({ error: "Mesa não encontrada" });
     }
+
+    await Qrcode.destroy({ where: { id_mesa: id } });
+
+    await mesa.destroy();
+    return res.status(200).json({ mensagem: "Mesa deletada com sucesso!" });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
+
 
 module.exports = {
   criarMesa,

@@ -141,7 +141,7 @@ router.post(
  *       500:
  *         description: Erro ao buscar prato
  */
-router.get("/buscar/:id", pratoController.buscarPratoPorId);
+router.get("/buscar/:id_pratos", pratoController.buscarPratoPorId);
 
 /**
  * @swagger
@@ -194,5 +194,8 @@ router.put('/prato-do-dia', pratoController.atualizarPratoDoDia);
  *         description: Erro ao deletar prato
  */
 router.delete('/deletar/:id_pratos', pratoController.deletarPrato);
+
+router.put("/editar/:id_pratos", pratoController.atualizarPrato);
+
 
 module.exports = router;

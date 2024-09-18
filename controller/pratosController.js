@@ -139,10 +139,10 @@ const pratosController = {
 
   buscarPratoPorId: async (req, res) => {
     try {
-      const { id } = req.params;
-
-      const prato = await Pratos.findAll({
-        where: { id_restaurante: id },
+      const { id_restaurante } = req.params; 
+  
+      const pratos = await Pratos.findAll({
+        where: { id_restaurante }, 
         include: [
           {
             model: Opcao,
@@ -158,19 +158,21 @@ const pratosController = {
           },
         ],
       });
-
-      if (!prato) {
-        return res.status(404).send({ mensagem: "Prato não encontrado" });
+  
+      if (!pratos || pratos.length === 0) {
+        return res.status(404).send({ mensagem: "Nenhum prato encontrado para este restaurante" });
       }
-
-      return res.status(200).send(prato);
+  
+      return res.status(200).send(pratos);
     } catch (error) {
-      console.error("Erro ao buscar prato por ID: ", error);
+      console.error("Erro ao buscar pratos por restaurante: ", error);
       return res
         .status(500)
-        .send({ mensagem: "Erro ao buscar prato", error: error.message });
+        .send({ mensagem: "Erro ao buscar pratos", error: error.message });
     }
   },
+  
+  
 
   atualizarPratoDoDia: async (req, res) => {
     try {

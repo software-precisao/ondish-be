@@ -73,6 +73,70 @@ const pratosController = {
     }
   },
 
+  atualizarPrato: async (req, res) => {
+    try {
+      const { id_pratos } = req.params;
+
+      const prato = await Pratos.findByPk(id_pratos);
+      if (!prato) {
+        return res.status(404).send({ mensagem: "Prato não encontrado!" });
+      }
+
+      await prato.update({
+        tipo_prato: req.body.tipo_prato,
+        titulo: req.body.titulo,
+        descricao: req.body.descricao,
+        valor: req.body.valor,
+        taxa_ondish: req.body.taxa_ondish,
+        id_cozinha_restaurante: req.body.id_cozinha_restaurante,
+        id_restaurante: req.body.id_restaurante,
+        prato_do_dia: req.body.prato_do_dia,
+      });
+
+      if (req.body.opcoes) {
+        const opcoes = JSON.parse(req.body.opcoes);
+
+        if (Array.isArray(opcoes)) {
+          await Opcao.destroy({ where: { id_pratos: prato.id_pratos } });
+          await Promise.all(
+            opcoes.map((opcao) =>
+              Opcao.create({
+                titulo: opcao.titulo,
+                tipo: opcao.tipo,
+                valorAdicional: opcao.valorAdicional,
+                obrigatorio: opcao.obrigatorio,
+                id_pratos: prato.id_pratos,
+              })
+            )
+          );
+        }
+      }
+
+      if (req.files && req.files.length > 0) {
+        await Imagem.destroy({ where: { id_pratos: prato.id_pratos } });
+        await Promise.all(
+          req.files.map((file) =>
+            Imagem.create({
+              foto: `/foto/${file.filename}`,
+              id_pratos: prato.id_pratos,
+            })
+          )
+        );
+      }
+
+      return res.status(200).send({
+        mensagem: "Prato atualizado com sucesso!",
+        pratoAtualizado: prato,
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar prato: ", error);
+      return res.status(500).send({
+        mensagem: "Erro ao atualizar prato",
+        error: error.message,
+      });
+    }
+  },
+
   buscarPratoPorId: async (req, res) => {
     try {
       const { id } = req.params;

@@ -92,6 +92,7 @@ const pratosController = {
         id_cozinha_restaurante: req.body.id_cozinha_restaurante,
         id_restaurante: req.body.id_restaurante,
         prato_do_dia: req.body.prato_do_dia,
+        tempo_preparo: req.body.tempo_preparo
       });
 
       if (req.body.opcoes) {

@@ -9,14 +9,46 @@ const path = require("path");
 const fs = require("fs").promises;
 require("dotenv").config();
 
+// Verifica se o usuário é um anfitrião
+const verificaAnfitriao = async (req, res) => {
+  try {
+    const { id_mesa } = req.body;
+
+    const sala = await Sala.findOne({
+      where: {
+        id_mesa: id_mesa,
+        status_anfitriao: 1
+      }
+    });
+
+    // Verifica se a sala foi encontrada e se tem um anfitrião
+    if (sala) {
+      // Já tem um anfitrião, então retorna a mensagem
+      return res.status(200).json({
+        status: 'convidado',
+        mensagem: 'Já tem um anfitrião na mesa, entre como convidado.'
+      });
+    } else {
+      // Não encontrou sala com anfitrião, então a mesa está livre
+      return res.status(200).json({
+        status: 'livre',
+        mensagem: 'Mesa Livre! Seja o anfitrião.'
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao verificar anfitrião.' });
+  }
+};
 // Função para criar uma nova sala
 const criarSala = async (req, res) => {
   const {
     nome_sala,
     id_restaurante,
+    id_mesa,
     numero_mesa,
     id_usuario_anfitriao,
-    status,
+    status_anfitriao,
     convidados,
   } = req.body;
 
@@ -35,8 +67,9 @@ const criarSala = async (req, res) => {
       nome_sala,
       numero_mesa,
       id_restaurante,
+      id_mesa,
       id_usuario_anfitriao,
-      status,
+      status_anfitriao,
     });
 
     await AtividadeSala.create({
@@ -46,8 +79,6 @@ const criarSala = async (req, res) => {
       status: 1
     });
 
-
-   
     // Adicionar os convidados
     if (Array.isArray(convidados)) {
       await Promise.all(
@@ -67,9 +98,10 @@ const criarSala = async (req, res) => {
           await SalaConvidado.create({
             id_sala: novaSala.id_sala,
             numero_mesa: novaSala.numero_mesa,
+            id_mesa: novaSala.id_mesa,
             id_usuario_convidado: convidado.id_usuario_convidado,
             id_restaurante: novaSala.id_restaurante,
-            status: convidado.status,
+            status_convidado: convidado.status_convidado,
           });
 
           // Aqui você pode implementar a lógica para enviar a notificação push para cada convidado
@@ -152,6 +184,39 @@ const criarSala = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+// Função para criar um convidado
+const convidado = async (req, res) => {
+  try {
+    const { id_mesa, id_usuario_convidado, status_convidado } = req.body;
+
+    const sala = await Sala.findOne({
+      where: {
+        id_mesa: id_mesa,
+        status_anfitriao: 1
+      }
+    });
+
+    if (sala) {
+      // Criar o convidado associado à sala
+      const convidadoQr = await SalaConvidado.create({
+        id_sala: sala.id_sala,
+        id_usuario_convidado: id_usuario_convidado,
+        status_convidado: 0,
+      });
+      return res.status(200).json({
+        mensagem: 'Convidado criado com sucesso!',
+        convidado: convidadoQr
+      });
+    } else {
+      return res.status(404).json({
+        mensagem: 'Nenhuma sala com anfitrião encontrada para esta mesa.'
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao procurar sala ou criar convidado.' });
+  }
+};
 // Função para listar todas as salas
 const listarSalas = async (req, res) => {
   try {
@@ -167,7 +232,7 @@ const listarSalas = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
+// Verificar se o usuário convidado já aceitou o convite
 const verificarConvitesPendentes = async (req, res) => {
   const { id_usuario } = req.params;
 
@@ -176,7 +241,7 @@ const verificarConvitesPendentes = async (req, res) => {
     const convitesPendentes = await SalaConvidado.findAll({
       where: {
         id_usuario_convidado: id_usuario,
-        status: "pendente",
+        status_convidado: 0,
       },
       include: [
         {
@@ -205,7 +270,7 @@ const verificarConvitesPendentes = async (req, res) => {
 // Função para atualizar o status do convite
 const atualizarStatusConvite = async (req, res) => {
   const { id_usuario, id_sala } = req.params;
-  const { status } = req.body;
+  const { status_convidado } = req.body;
 
   try {
     const salainfo = await Sala.findByPk(id_sala, {
@@ -235,10 +300,10 @@ const atualizarStatusConvite = async (req, res) => {
       return res.status(404).json({ mensagem: "Convite não encontrado." });
     }
 
-    convite.status = status;
+    convite.status_convidado = status_convidado;
     await convite.save();
 
-    if (req.body.status === "Aceito") {
+    if (req.body.status === 1) {
       const htmlFilePath = path.join(__dirname, "../template/sala/aceito.html");
       let htmlContent = await fs.readFile(htmlFilePath, "utf8");
 
@@ -330,7 +395,7 @@ const obterSala = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
+// Deleta a sala
 const deletarSala = async (req, res) => {
   const { id } = req.params;
   try {
@@ -360,6 +425,8 @@ const deletarSala = async (req, res) => {
 
 module.exports = {
   criarSala,
+  convidado,
+  verificaAnfitriao,
   listarSalas,
   obterSala,
   verificarConvitesPendentes,

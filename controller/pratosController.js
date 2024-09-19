@@ -1,7 +1,7 @@
 const Pratos = require("../models/tb_pratos");
 const Opcao = require("../models/tb_opcoes");
 const Imagem = require("../models/tb_foto_pratos");
-const CozinhaRestaurante = require('../models/tb_cozinha_restaurante');
+const CozinhaRestaurante = require("../models/tb_cozinha_restaurante");
 
 const pratosController = {
   criarPratos: async (req, res) => {
@@ -92,26 +92,22 @@ const pratosController = {
         id_cozinha_restaurante: req.body.id_cozinha_restaurante,
         id_restaurante: req.body.id_restaurante,
         prato_do_dia: req.body.prato_do_dia,
-        tempo_preparo: req.body.tempo_preparo
+        tempo_preparo: req.body.tempo_preparo,
       });
 
-      if (req.body.opcoes) {
-        const opcoes = JSON.parse(req.body.opcoes);
-
-        if (Array.isArray(opcoes)) {
-          await Opcao.destroy({ where: { id_pratos: prato.id_pratos } });
-          await Promise.all(
-            opcoes.map((opcao) =>
-              Opcao.create({
-                titulo: opcao.titulo,
-                tipo: opcao.tipo,
-                valorAdicional: opcao.valorAdicional,
-                obrigatorio: opcao.obrigatorio,
-                id_pratos: prato.id_pratos,
-              })
-            )
-          );
-        }
+      if (req.body.opcoes && Array.isArray(req.body.opcoes)) {
+        await Opcao.destroy({ where: { id_pratos: prato.id_pratos } });
+        await Promise.all(
+          req.body.opcoes.map((opcao) =>
+            Opcao.create({
+              titulo: opcao.titulo,
+              tipo: opcao.tipo,
+              valorAdicional: opcao.valorAdicional,
+              obrigatorio: opcao.obrigatorio,
+              id_pratos: prato.id_pratos,
+            })
+          )
+        );
       }
 
       if (req.files && req.files.length > 0) {
@@ -141,10 +137,10 @@ const pratosController = {
 
   buscarPratoPorId: async (req, res) => {
     try {
-      const { id_restaurante } = req.params; 
-  
+      const { id_restaurante } = req.params;
+
       const pratos = await Pratos.findAll({
-        where: { id_restaurante }, 
+        where: { id_restaurante },
         include: [
           {
             model: Opcao,
@@ -160,11 +156,13 @@ const pratosController = {
           },
         ],
       });
-  
+
       if (!pratos || pratos.length === 0) {
-        return res.status(404).send({ mensagem: "Nenhum prato encontrado para este restaurante" });
+        return res
+          .status(404)
+          .send({ mensagem: "Nenhum prato encontrado para este restaurante" });
       }
-  
+
       return res.status(200).send(pratos);
     } catch (error) {
       console.error("Erro ao buscar pratos por restaurante: ", error);
@@ -173,8 +171,6 @@ const pratosController = {
         .send({ mensagem: "Erro ao buscar pratos", error: error.message });
     }
   },
-  
-  
 
   atualizarPratoDoDia: async (req, res) => {
     try {
@@ -199,7 +195,12 @@ const pratosController = {
       });
     } catch (error) {
       console.error("Erro ao atualizar prato do dia: ", error);
-      return res.status(500).send({ mensagem: "Erro ao atualizar prato do dia", error: error.message });
+      return res
+        .status(500)
+        .send({
+          mensagem: "Erro ao atualizar prato do dia",
+          error: error.message,
+        });
     }
   },
 
@@ -225,7 +226,9 @@ const pratosController = {
       return res.status(200).send({ mensagem: "Prato deletado com sucesso!" });
     } catch (error) {
       console.error("Erro ao deletar prato: ", error);
-      return res.status(500).send({ mensagem: "Erro ao deletar prato", error: error.message });
+      return res
+        .status(500)
+        .send({ mensagem: "Erro ao deletar prato", error: error.message });
     }
   },
 };

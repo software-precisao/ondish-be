@@ -17,6 +17,10 @@ const Sala = conn.define("tb_sala", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  id_mesa: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   numero_mesa: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -29,8 +33,8 @@ const Sala = conn.define("tb_sala", {
       key: 'id_user'
     }
   },
-  status: {
-    type: DataTypes.STRING,
+  status_anfitriao: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   }
 }, { freezeTableName: true });

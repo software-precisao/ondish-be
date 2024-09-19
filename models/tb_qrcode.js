@@ -20,7 +20,7 @@ const Qrcode = conn.define("tb_qrcode", {
     },
     id_mesa: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
     },
 
 

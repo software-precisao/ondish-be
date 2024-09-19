@@ -187,7 +187,7 @@ const criarSala = async (req, res) => {
 // Função para criar um convidado
 const convidado = async (req, res) => {
   try {
-    const { id_mesa, id_usuario_convidado, status_convidado } = req.body;
+    const { id_mesa, id_usuario_convidado } = req.body;
 
     const sala = await Sala.findOne({
       where: {

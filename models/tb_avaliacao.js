@@ -5,32 +5,34 @@ const Restaurante = require("./tb_restaurante");
 const Usuario = require("./tb_usuarios");
 
 const Avaliacao = conn.define(
-    "tb_avaliacao",
-    {
-        id_avaliacao: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        avaliacao: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
-        id_restaurante: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        id_user: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
+  "tb_avaliacao",
+  {
+    id_avaliacao: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
     },
-    { freezeTableName: true }
+    avaliacao: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    id_restaurante: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    id_user: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+  },
+  { freezeTableName: true }
 );
 
 Avaliacao.belongsTo(Restaurante, {
   foreignKey: "id_restaurante",
   as: "restaurante",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Avaliacao.belongsTo(Usuario, {

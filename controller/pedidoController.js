@@ -10,6 +10,8 @@ const Mesa = require("../models/tb_mesa");
 const Usuario = require("../models/tb_usuarios");
 const AtividadePedido = require("../models/tb_atividade_pedido");
 const Sobremesa = require("../models/tb_sobremesas")
+const logPedido = require("./logsPedidoController"); 
+
 
 const gerarNumeroPedido = () => {
   return Math.floor(Math.random() * 90000) + 10000;
@@ -76,6 +78,10 @@ const criarPedidoComItens = async (req, res) => {
         );
       }
     }
+
+    const mensagem = `Foi realizado um pedido com o n°: ${numero_pedido}, com o valor: ${valor_total} na mesa: ${id_mesa}, com o status: ${status}, às: ${pedido.createdAt}`;
+    console.log(mensagem)
+    await logPedido.criarLog(pedido.id_pedido, mensagem);
 
     return res.status(201).send({
       mensagem: "Pedido criado com sucesso!",
@@ -244,6 +250,9 @@ const atualizarStatusPedido = async (req, res) => {
       );
     }
 
+    const mensagem = `O status do pedido n°: ${pedido.numero_pedido} foi atualizado para: ${status} às ${pedido.updatedAt}`;
+    await logPedido.criarLog(pedido.id_pedido, mensagem);
+
     return res.status(200).send({
       mensagem: "Status do pedido atualizado com sucesso!",
       pedidoAtualizado: {
@@ -259,6 +268,7 @@ const atualizarStatusPedido = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   criarPedidoComItens,

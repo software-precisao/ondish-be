@@ -7,9 +7,9 @@ const Qrcode = require("../models/tb_qrcode");
 
 const Usuario = require("../models/tb_usuarios");
 const Avaliacao = require("../models/tb_avaliacao");
+const Mesa = require("../models/tb_mesa");
 
 const restauranteController = {
-  // Criar um novo Restaurante
   criarRestaurante: async (req, res) => {
     try {
       const filenamecapa = req.files.capa
@@ -43,6 +43,7 @@ const restauranteController = {
       const novoQrcode = await Qrcode.create({
         qrcode: qrCodeURL,
         id_restaurante: novoRestaurante.id_restaurante,
+        id_mesa: req.body.id_mesa, 
       });
 
       let id_user = req.body.id_user;
@@ -80,7 +81,7 @@ const restauranteController = {
         .send({ mensagem: "Erro ao criar restaurante", error: error.message });
     }
   },
-  // Buscar todos os Restaurantes
+
   buscarTodos: async (req, res) => {
     try {
       const restaurantes = await Restaurante.findAll();
@@ -107,7 +108,7 @@ const restauranteController = {
           },
         ],
       });
-      
+
       if (!restaurante) {
         return res.status(404).send({ mensagem: "Restaurante não encontrado" });
       }
@@ -145,11 +146,24 @@ const restauranteController = {
 
   // Deletar um Restaurante
   deletarRestaurante: async (req, res) => {
-    const { id } = req.params;
+    const { id_restaurante } = req.params;
     try {
-      const deletado = await Restaurante.destroy({
-        where: { id_restaurante: id },
+      await Qrcode.destroy({
+        where: { id_restaurante: id_restaurante },
       });
+
+      await Mesa.destroy({
+        where: { id_restaurante: id_restaurante },
+      });
+      
+      await Avaliacao.destroy({
+        where: { id_restaurante: id_restaurante },
+      });
+
+      const deletado = await Restaurante.destroy({
+        where: { id_restaurante: id_restaurante },
+      });
+
       if (deletado) {
         return res
           .status(200)

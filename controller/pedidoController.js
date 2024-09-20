@@ -11,6 +11,7 @@ const Usuario = require("../models/tb_usuarios");
 const AtividadePedido = require("../models/tb_atividade_pedido");
 const Sobremesa = require("../models/tb_sobremesas")
 const logPedido = require("./logsPedidoController"); 
+const { Op } = require("sequelize");
 
 
 const gerarNumeroPedido = () => {
@@ -269,6 +270,129 @@ const atualizarStatusPedido = async (req, res) => {
   }
 };
 
+const obterPedidoPorUsuarioMesa = async (req, res) => {
+
+  try{
+
+    const { id_usuario, id_mesa } = req.params;
+
+    if(!id_usuario || !id_mesa){
+      return res.status(400).send({mensagem: "Parâmetros inválidos"});
+    }
+
+    const pedido = await Pedido.findAll({
+      where: {
+        id_usuario,
+        id_mesa: id_mesa,
+        status: "Entregue na mesa"
+    },
+      include: [
+        {
+          model: ItensPedido,
+          as: "itens_pedido",
+          include: [
+            {
+              model: Pratos,
+              as: "prato",
+            },
+            {
+              model: Bebida,
+              as: "bebida",
+            },
+            {
+              model: Opcoes,
+              as: "opcoes",
+            },
+            {
+              model: Sobremesa,
+              as: "sobremesa",
+            },
+          ],
+        },]
+        
+  })
+
+  if(!pedido){
+    return res.status(404).send({mensagem: "Pedido não encontrado"});
+  }
+
+  let total = pedido.reduce((acc, item) => acc + parseFloat(item.valor_total), 0);
+
+
+  return res.status(200).json({
+    success: true,
+    total_pedido: total ?? 0,
+    pedidos: pedido
+  })
+  }
+  catch(error){
+    console.error("Erro ao obter pedido:", error.message);
+    return res.status(500).send({ error: error.message });
+  }
+
+  
+}
+
+const obterPedidoNaoPagos = async (req, res) => {
+
+  try{
+
+    const { id_user } = req.params;
+
+    if(!id_user){
+      return res.status(400).send({mensagem: "Parâmetros inválidos"});
+    }
+
+    const pedido = await Pedido.findAll({
+      where: {
+        id_usuario: id_user,
+        status: {
+          [Op.ne]: "Pago",
+          [Op.ne]: "Cancelado"
+        }},
+      include: [
+        {
+          model: ItensPedido,
+          as: "itens_pedido",
+          include: [
+            {
+              model: Pratos,
+              as: "prato",
+            },
+            {
+              model: Bebida,
+              as: "bebida",
+            },
+            {
+              model: Opcoes,
+              as: "opcoes",
+            },
+            {
+              model: Sobremesa,
+              as: "sobremesa",
+            },
+          ],
+        },]}
+      )
+    
+  if(!pedido){
+    return res.status(404).send({mensagem: "Pedido não encontrado"});
+  }
+
+  return res.status(200).json({
+    success: true,
+    pedidos: pedido
+  })
+   
+
+  }
+  catch(error){
+    console.error("Erro ao obter pedido:", error.message);
+    return res.status(500).send({ error: error.message });
+  }
+
+}
+
 
 module.exports = {
   criarPedidoComItens,
@@ -276,4 +400,5 @@ module.exports = {
   obterPedido,
   atualizarStatusPedido,
   obterStatusPedido,
+  obterPedidoPorUsuarioMesa
 };

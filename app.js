@@ -114,7 +114,7 @@ const syncModels = async () => {
   }
 };
 
-syncModels();
+//syncModels();
 
 const swaggerOptions = {
   customCss: `

@@ -2,6 +2,7 @@ const { Sequelize, DataTypes } = require("sequelize");
 const conn = require("../data/conn");
 const Usuario = require("./tb_usuarios");
 const Restaurante = require("./tb_restaurante");
+const Mesa = require("./tb_mesa");
 
 const Sala = conn.define("tb_sala", {
   id_sala: {
@@ -14,6 +15,10 @@ const Sala = conn.define("tb_sala", {
     allowNull: true,
   },
   id_restaurante: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  id_mesa: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
@@ -32,6 +37,10 @@ const Sala = conn.define("tb_sala", {
   status: {
     type: DataTypes.STRING,
     allowNull: false,
+  },
+  status_anfitriao: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   }
 }, { freezeTableName: true });
 
@@ -42,5 +51,9 @@ Sala.belongsTo(Restaurante, {
 
 Sala.belongsTo(Usuario, { as: 'anfitriao', foreignKey: 'id_usuario_anfitriao' });
 
+Sala.belongsTo(Mesa, {
+  foreignKey: "id_mesa",
+  as: "mesa",
+});
 
 module.exports = Sala;

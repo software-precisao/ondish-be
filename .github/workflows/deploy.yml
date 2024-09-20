@@ -3,7 +3,7 @@ name: Deploy Node.js App to Cpanel
 on:
   push:
     branches:
-      - dev
+      - prod
 
 jobs:
   build-and-deploy:

@@ -3,6 +3,7 @@ const conn = require("../data/conn");
 const Usuario = require("./tb_usuarios");
 const Sala = require("./tb_sala");
 const Restaurante = require("./tb_restaurante");
+const Mesa = require("./tb_mesa");
 
 const SalaConvidado = conn.define("tb_sala_convidado", {
   id_sala: {
@@ -25,19 +26,33 @@ const SalaConvidado = conn.define("tb_sala_convidado", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  id_mesa: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   id_restaurante: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  status_convidado: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
   status: {
     type: DataTypes.STRING,
     allowNull: false,
+    defaultValue: 'pendente'
   }
 }, { freezeTableName: true });
 
 SalaConvidado.belongsTo(Restaurante, {
   foreignKey: "id_restaurante",
   as: "restaurante",
+});
+
+SalaConvidado.belongsTo(Mesa, {
+  foreignKey: "id_mesa",
+  as: "mesa",
 });
 
 Sala.belongsToMany(Usuario, { through: SalaConvidado, as: 'convidados', foreignKey: 'id_sala' });

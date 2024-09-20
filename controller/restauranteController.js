@@ -67,7 +67,7 @@ const restauranteController = {
         mensagem: "Restaurante cadastrado com sucesso!",
         restauranteCriado: {
           id_restaurante: novoRestaurante.id_restaurante,
-          qrcode: novoQrcode.qrcode,
+          //qrcode: novoQrcode.qrcode,
           request: {
             tipo: "GET",
           },

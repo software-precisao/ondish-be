@@ -337,7 +337,7 @@ const obterPedidoNaoPagos = async (req, res) => {
 
   try{
 
-    const { id_user } = req.params;
+    const { id_user, id_mesa } = req.params;
 
     if(!id_user){
       return res.status(400).send({mensagem: "Parâmetros inválidos"});
@@ -346,6 +346,7 @@ const obterPedidoNaoPagos = async (req, res) => {
     const pedido = await Pedido.findAll({
       where: {
         id_usuario: id_user,
+        id_mesa: id_mesa,
         status: {
           [Op.ne]: "Pago",
           [Op.ne]: "Cancelado"
@@ -400,5 +401,6 @@ module.exports = {
   obterPedido,
   atualizarStatusPedido,
   obterStatusPedido,
-  obterPedidoPorUsuarioMesa
+  obterPedidoPorUsuarioMesa,
+  obterPedidoNaoPagos
 };

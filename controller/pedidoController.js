@@ -343,6 +343,12 @@ const obterPedidoNaoPagos = async (req, res) => {
       return res.status(400).send({mensagem: "Parâmetros inválidos"});
     }
 
+    const mesa = await Mesa.findOne({
+      where: {
+        id_mesa
+      }
+    })
+
     const pedido = await Pedido.findAll({
       where: {
         id_usuario: id_user,
@@ -375,14 +381,20 @@ const obterPedidoNaoPagos = async (req, res) => {
           ],
         },]}
       )
+
+
     
   if(!pedido){
     return res.status(404).send({mensagem: "Pedido não encontrado"});
   }
 
+  const total = pedido.reduce((acc, item) => acc + parseFloat(item.valor_total), 0);
+
   return res.status(200).json({
     success: true,
-    pedidos: pedido
+    pedidos: pedido,
+    total_pedido: total ?? 0,
+    mesa: mesa
   })
    
 

@@ -37,6 +37,11 @@ const SalaConvidado = conn.define("tb_sala_convidado", {
   status_convidado: {
     type: DataTypes.INTEGER,
     allowNull: false,
+  },
+  status: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'pendente'
   }
 }, { freezeTableName: true });
 

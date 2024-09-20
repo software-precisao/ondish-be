@@ -40,11 +40,12 @@ const restauranteController = {
 
       await novoRestaurante.update({ qrcode: qrCodeURL });
 
-      const novoQrcode = await Qrcode.create({
+      /* const novoQrcode = await Qrcode.create({
         qrcode: qrCodeURL,
         id_restaurante: novoRestaurante.id_restaurante,
       });
-
+ */
+      
       let id_user = req.body.id_user;
 
       const usuario = await Usuario.findByPk(id_user);

@@ -435,7 +435,7 @@ const atualizarStatusConvite = async (req, res) => {
 
       let info = await transporter.sendMail(mailOptions);
       console.log("Mensagem enviada: %s", info.messageId);
-    } else if (req.body.status === "Recusado") {
+    } else if (req.body.status === 0) {
       const htmlFilePath = path.join(__dirname, "../template/sala/negado.html");
       let htmlContent = await fs.readFile(htmlFilePath, "utf8");
 

@@ -95,7 +95,6 @@ const criarPedidoComItens = async (req, res) => {
   }
 };
 
-
 const obterStatusPedido = async (req, res) => {
   try {
     const { id_pedido } = req.params;

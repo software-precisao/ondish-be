@@ -18,6 +18,11 @@ const Usuario = conn.define("tb_usuario", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  numero_telefone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
   email: {
     type: DataTypes.STRING,
     allowNull: false,

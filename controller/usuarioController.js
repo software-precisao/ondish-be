@@ -199,6 +199,8 @@ const atualizarSenhaUsuario = async (req, res, next) => {
     return res.status(500).send({ error: error.message });
   }
 };
+
+
 const recuperarSenha = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -260,6 +262,8 @@ const recuperarSenha = async (req, res, next) => {
     return res.status(500).send({ error: error.message });
   }
 };
+
+
 const verificarCodigo = async (req, res) => {
   try {
     const { id_user, code } = req.body;
@@ -287,6 +291,8 @@ const verificarCodigo = async (req, res) => {
       .send({ mensagem: "Erro ao verificar código", error: error.message });
   }
 };
+
+
 const obterUsuarios = async (req, res, next) => {
   try {
     const usuarios = await Usuario.findAll();
@@ -295,6 +301,8 @@ const obterUsuarios = async (req, res, next) => {
     return res.status(500).send({ error: error.message });
   }
 };
+
+
 const obterUsuarioPorId = async (req, res, next) => {
   try {
     const usuario = await Usuario.findByPk(req.params.id);
@@ -306,6 +314,8 @@ const obterUsuarioPorId = async (req, res, next) => {
     next(error);
   }
 };
+
+
 const atualizarUsuario = async (req, res, next) => {
   try {
     console.log(
@@ -334,6 +344,8 @@ const atualizarUsuario = async (req, res, next) => {
     next(error);
   }
 };
+
+
 const deletarUsuario = async (req, res, next) => {
   try {
     const deleted = await Usuario.destroy({
@@ -349,6 +361,84 @@ const deletarUsuario = async (req, res, next) => {
   }
 };
 
+const trocaSenha = async (req, res, next) => {
+  try {
+    const userId = req.params.id_user;
+
+    if (!userId) {
+      return res.status(400).send({ message: "ID do usuário não fornecido" });
+    }
+
+    const usuario = await Usuario.findByPk(userId);
+
+    if (!usuario) {
+      return res.status(404).send({ message: "Usuário não encontrado" });
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.senha, 10);
+    usuario.senha = hashedPassword;
+
+    await usuario.save();
+
+    return res.status(200).send({ mensagem: "Senha alterada com sucesso!" });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+
+const trocaSenhaporEmail = async (req, res, next) => {
+  try {
+    const { email, senha } = req.body;
+
+    if (!email) {
+      return res.status(400).send({ message: "Email não fornecido" });
+    }
+
+    const usuario = await Usuario.findOne({ where: { email: email } });
+
+    if (!usuario) {
+      return res.status(404).send({ message: "Usuário não encontrado" });
+    }
+
+    const hashedPassword = await bcrypt.hash(senha, 10);
+    usuario.senha = hashedPassword;
+
+    const htmlFilePath = path.join(__dirname, "../template/auth/senha.html");
+    let htmlContent = await fs.readFile(htmlFilePath, "utf8");
+
+    htmlContent = htmlContent.replace("{{email}}", usuario.email);
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        ciphers: "TLSv1",
+      },
+    });
+
+    let mailOptions = {
+      from: `"Equipe Ondish" ${process.env.EMAIL_FROM}`,
+      to: email,
+      subject: "🔒 Senha alterada com sucesso!",
+      html: htmlContent,
+    };
+
+    let info = await transporter.sendMail(mailOptions);
+    console.log("Mensagem enviada: %s", info.messageId);
+
+    await usuario.save();
+
+    return res.status(200).send({ mensagem: "Senha alterada com sucesso!" });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+
 module.exports = {
   criarUsuario,
   criarUsuarioRestaurante,
@@ -359,4 +449,6 @@ module.exports = {
   atualizarUsuario,
   atualizarSenhaUsuario,
   deletarUsuario,
+  trocaSenha,
+  trocaSenhaporEmail
 };

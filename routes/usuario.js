@@ -254,4 +254,8 @@ router.post('/valida-email', usuarioController.recuperarSenha);
  */
 router.delete('/delete/:id_user', usuarioController.deletarUsuario);
 
+router.put('/edit/trocar-senha', usuarioController.trocaSenhaporEmail);
+router.put("/dados/:id_user", usuarioController.trocaSenha);
+
+
 module.exports = router;

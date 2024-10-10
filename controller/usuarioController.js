@@ -12,6 +12,16 @@ require("dotenv").config();
 
 const criarUsuario = async (req, res, next) => {
   try {
+    const telefoneExistente = await Usuario.findOne({
+      where: { numero_telefone: req.body.numero_telefone },
+    });
+
+    if (telefoneExistente) {
+      return res.status(409).send({
+        mensagem: "Número de telefone já cadastrado, por favor insira outro!",
+      });
+    }
+
     const usuarioExistente = await Usuario.findOne({
       where: { email: req.body.email },
     });
@@ -21,7 +31,9 @@ const criarUsuario = async (req, res, next) => {
         mensagem: "Email já cadastrado, por favor insira um email diferente!",
       });
     }
+
     const hashedPassword = await bcrypt.hash(req.body.senha, 10);
+
     const filename = req.files.avatar
       ? req.files.avatar[0].filename
       : "default-avatar.png";
@@ -29,6 +41,7 @@ const criarUsuario = async (req, res, next) => {
     const novoUsuario = await Usuario.create({
       nome: req.body.nome,
       sobrenome: req.body.sobrenome,
+      numero_telefone: req.body.numero_telefone,
       email: req.body.email,
       senha: hashedPassword,
       id_nivel: 3,
@@ -68,7 +81,7 @@ const criarUsuario = async (req, res, next) => {
     let mailOptions = {
       from: `"Equipa Ondish Foods" ${process.env.EMAIL_FROM}`,
       to: req.body.email,
-      subject: "🔒 Código de verificação Ondish!`,",
+      subject: "🔒 Código de verificação Ondish!",
       html: htmlContent,
     };
 
@@ -81,7 +94,7 @@ const criarUsuario = async (req, res, next) => {
     });
 
     const response = {
-      mensagem: "Usuário cadastrado com sucesso e Token unico gerado!",
+      mensagem: "Usuário cadastrado com sucesso e Token único gerado!",
       usuarioCriado: {
         id_user: novoUsuario.id_user,
         nome: novoUsuario.nome,
@@ -92,7 +105,7 @@ const criarUsuario = async (req, res, next) => {
         request: {
           tipo: "GET",
           descricao: "Pesquisar um usuário",
-          url: `https://trustchecker.com.br/api//usuarios/${novoUsuario.id_user}`,
+          url: `https://trustchecker.com.br/api/usuarios/${novoUsuario.id_user}`,
         },
       },
     };
@@ -102,6 +115,7 @@ const criarUsuario = async (req, res, next) => {
     return res.status(500).send({ error: error.message });
   }
 };
+
 const criarUsuarioRestaurante = async (req, res, next) => {
   try {
     const usuarioExistente = await Usuario.findOne({
@@ -155,6 +169,7 @@ const criarUsuarioRestaurante = async (req, res, next) => {
     return res.status(500).send({ error: error.message });
   }
 };
+
 const atualizarSenhaUsuario = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -239,7 +254,7 @@ const recuperarSenha = async (req, res, next) => {
 
     return res.status(200).send({
       mensagem: "Código de recuperação enviado com sucesso!",
-      id_user: usuarioExistente.id_user
+      id_user: usuarioExistente.id_user,
     });
   } catch (error) {
     return res.status(500).send({ error: error.message });
@@ -333,8 +348,6 @@ const deletarUsuario = async (req, res, next) => {
     next(error);
   }
 };
-
-
 
 module.exports = {
   criarUsuario,

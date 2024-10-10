@@ -7,111 +7,188 @@ const { v4: uuidv4 } = require("uuid");
 
 const nodemailer = require("nodemailer");
 const path = require("path");
+const { Sequelize } = require("sequelize");
 const fs = require("fs").promises;
 require("dotenv").config();
 
-const criarUsuario = async (req, res, next) => {
+// const criarUsuario = async (req, res, next) => {
+//   try {
+//     const telefoneExistente = await Usuario.findOne({
+//       where: { numero_telefone: req.body.numero_telefone },
+//     });
+
+//     if (telefoneExistente) {
+//       return res.status(409).send({
+//         mensagem: "Número de telefone já cadastrado, por favor insira outro!",
+//       });
+//     }
+
+//     const usuarioExistente = await Usuario.findOne({
+//       where: { email: req.body.email },
+//     });
+
+//     if (usuarioExistente) {
+//       return res.status(409).send({
+//         mensagem: "Email já cadastrado, por favor insira um email diferente!",
+//       });
+//     }
+
+//     const hashedPassword = await bcrypt.hash(req.body.senha, 10);
+
+//     const filename = req.files.avatar
+//       ? req.files.avatar[0].filename
+//       : "default-avatar.png";
+
+//     const novoUsuario = await Usuario.create({
+//       nome: req.body.nome,
+//       sobrenome: req.body.sobrenome,
+//       numero_telefone: req.body.numero_telefone,
+//       email: req.body.email,
+//       senha: hashedPassword,
+//       id_nivel: 3,
+//       id_status: 1,
+//       avatar: `/avatar/${filename}`,
+//     });
+
+//     const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
+
+//     const code = await Code.create({
+//       type_code: 1,
+//       code: codigoAleatorio,
+//       id_user: novoUsuario.id_user,
+//     });
+
+//     const htmlFilePath = path.join(__dirname, "../template/code/index.html");
+//     let htmlContent = await fs.readFile(htmlFilePath, "utf8");
+
+//     htmlContent = htmlContent
+//       .replace("{{nome}}", novoUsuario.nome)
+//       .replace("{{email}}", novoUsuario.email)
+//       .replace("{{code}}", code.code);
+
+//     const transporter = nodemailer.createTransport({
+//       host: process.env.EMAIL_HOST,
+//       port: process.env.EMAIL_PORT,
+//       secure: true,
+//       auth: {
+//         user: process.env.EMAIL_USER,
+//         pass: process.env.EMAIL_PASS,
+//       },
+//       tls: {
+//         ciphers: "TLSv1",
+//       },
+//     });
+
+//     let mailOptions = {
+//       from: `"Equipa Ondish Foods" ${process.env.EMAIL_FROM}`,
+//       to: req.body.email,
+//       subject: "🔒 Código de verificação Ondish!",
+//       html: htmlContent,
+//     };
+
+//     let info = await transporter.sendMail(mailOptions);
+//     console.log("Mensagem enviada: %s", info.messageId);
+
+//     const tokenUsuario = await Token.create({
+//       id_user: novoUsuario.id_user,
+//       token: uuidv4(),
+//     });
+
+//     const response = {
+//       mensagem: "Usuário cadastrado com sucesso e Token único gerado!",
+//       usuarioCriado: {
+//         id_user: novoUsuario.id_user,
+//         nome: novoUsuario.nome,
+//         email: novoUsuario.email,
+//         nivel: novoUsuario.id_nivel,
+//         token_unico: tokenUsuario.token,
+//         code: code.code,
+//         request: {
+//           tipo: "GET",
+//           descricao: "Pesquisar um usuário",
+//           url: `https://trustchecker.com.br/api/usuarios/${novoUsuario.id_user}`,
+//         },
+//       },
+//     };
+
+//     return res.status(202).send(response);
+//   } catch (error) {
+//     return res.status(500).send({ error: error.message });
+//   }
+// };
+
+const registrarNumeroTelefone = async (req, res) => {
   try {
-    const telefoneExistente = await Usuario.findOne({
-      where: { numero_telefone: req.body.numero_telefone },
+    const { numero_telefone, id_nivel, id_status } = req.body;
+
+    const usuarioExistente = await Usuario.findOne({
+      where: { numero_telefone },
+    });
+    if (usuarioExistente) {
+      return res
+        .status(400)
+        .send({ mensagem: "Número de telefone já cadastrado." });
+    }
+
+    const novoUsuario = await Usuario.create({
+      numero_telefone: numero_telefone,
+      id_nivel: 3,
+      id_status: 1,
+      pin_registro: null,
     });
 
-    if (telefoneExistente) {
-      return res.status(409).send({
-        mensagem: "Número de telefone já cadastrado, por favor insira outro!",
-      });
+    return res.status(201).send({
+      mensagem: "Número de telefone registrado com sucesso.",
+      id_user: novoUsuario.id_user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ error: error.message });
+  }
+};
+
+const concluirRegistro = async (req, res) => {
+  try {
+    const { id_user } = req.params;
+    const { senha, pin_registro, nome, sobrenome, email, avatar, config } =
+      req.body;
+
+    const usuario = await Usuario.findOne({ where: { id_user } });
+    if (!usuario) {
+      return res.status(404).send({ mensagem: "Usuário não encontrado." });
     }
 
     const usuarioExistente = await Usuario.findOne({
-      where: { email: req.body.email },
+      where: {
+        email,
+        id_user: { [Sequelize.Op.ne]: id_user },
+      },
     });
-
     if (usuarioExistente) {
-      return res.status(409).send({
-        mensagem: "Email já cadastrado, por favor insira um email diferente!",
-      });
+      return res.status(400).send({ mensagem: "Email já cadastrado." });
     }
 
-    const hashedPassword = await bcrypt.hash(req.body.senha, 10);
+    if (usuario.pin_registro !== pin_registro) {
+      return res.status(401).send({ mensagem: "PIN inválido." });
+    }
 
-    const filename = req.files.avatar
-      ? req.files.avatar[0].filename
-      : "default-avatar.png";
-
-    const novoUsuario = await Usuario.create({
-      nome: req.body.nome,
-      sobrenome: req.body.sobrenome,
-      numero_telefone: req.body.numero_telefone,
-      email: req.body.email,
-      senha: hashedPassword,
-      id_nivel: 3,
-      id_status: 1,
-      avatar: `/avatar/${filename}`,
-    });
-
-    const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
-
-    const code = await Code.create({
-      type_code: 1,
-      code: codigoAleatorio,
-      id_user: novoUsuario.id_user,
-    });
-
-    const htmlFilePath = path.join(__dirname, "../template/code/index.html");
-    let htmlContent = await fs.readFile(htmlFilePath, "utf8");
-
-    htmlContent = htmlContent
-      .replace("{{nome}}", novoUsuario.nome)
-      .replace("{{email}}", novoUsuario.email)
-      .replace("{{code}}", code.code);
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+    await Usuario.update(
+      {
+        nome,
+        sobrenome,
+        email,
+        senha: await bcrypt.hash(senha, 10),
+        avatar,
+        config,
       },
-      tls: {
-        ciphers: "TLSv1",
-      },
-    });
+      { where: { id_user } }
+    );
 
-    let mailOptions = {
-      from: `"Equipa Ondish Foods" ${process.env.EMAIL_FROM}`,
-      to: req.body.email,
-      subject: "🔒 Código de verificação Ondish!",
-      html: htmlContent,
-    };
-
-    let info = await transporter.sendMail(mailOptions);
-    console.log("Mensagem enviada: %s", info.messageId);
-
-    const tokenUsuario = await Token.create({
-      id_user: novoUsuario.id_user,
-      token: uuidv4(),
-    });
-
-    const response = {
-      mensagem: "Usuário cadastrado com sucesso e Token único gerado!",
-      usuarioCriado: {
-        id_user: novoUsuario.id_user,
-        nome: novoUsuario.nome,
-        email: novoUsuario.email,
-        nivel: novoUsuario.id_nivel,
-        token_unico: tokenUsuario.token,
-        code: code.code,
-        request: {
-          tipo: "GET",
-          descricao: "Pesquisar um usuário",
-          url: `https://trustchecker.com.br/api/usuarios/${novoUsuario.id_user}`,
-        },
-      },
-    };
-
-    return res.status(202).send(response);
+    return res
+      .status(200)
+      .send({ mensagem: "Registro concluído com sucesso." });
   } catch (error) {
+    console.log(error);
     return res.status(500).send({ error: error.message });
   }
 };
@@ -200,7 +277,6 @@ const atualizarSenhaUsuario = async (req, res, next) => {
   }
 };
 
-
 const recuperarSenha = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -263,7 +339,6 @@ const recuperarSenha = async (req, res, next) => {
   }
 };
 
-
 const verificarCodigo = async (req, res) => {
   try {
     const { id_user, code } = req.body;
@@ -292,7 +367,6 @@ const verificarCodigo = async (req, res) => {
   }
 };
 
-
 const obterUsuarios = async (req, res, next) => {
   try {
     const usuarios = await Usuario.findAll();
@@ -301,7 +375,6 @@ const obterUsuarios = async (req, res, next) => {
     return res.status(500).send({ error: error.message });
   }
 };
-
 
 const obterUsuarioPorId = async (req, res, next) => {
   try {
@@ -314,7 +387,6 @@ const obterUsuarioPorId = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const atualizarUsuario = async (req, res, next) => {
   try {
@@ -344,7 +416,6 @@ const atualizarUsuario = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const deletarUsuario = async (req, res, next) => {
   try {
@@ -440,7 +511,6 @@ const trocaSenhaporEmail = async (req, res, next) => {
 };
 
 module.exports = {
-  criarUsuario,
   criarUsuarioRestaurante,
   recuperarSenha,
   verificarCodigo,
@@ -450,5 +520,7 @@ module.exports = {
   atualizarSenhaUsuario,
   deletarUsuario,
   trocaSenha,
-  trocaSenhaporEmail
+  trocaSenhaporEmail,
+  registrarNumeroTelefone,
+  concluirRegistro,
 };

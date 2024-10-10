@@ -56,7 +56,7 @@ const {uploadFields} = require('../helpers/img-uploader');
  *         description: Erro interno do servidor
  */
 
-router.post('/cadastrar', uploadFields, usuarioController.criarUsuario);
+// router.post('/cadastrar', uploadFields, usuarioController.criarUsuario);
 
 /**
  * @swagger
@@ -256,6 +256,11 @@ router.delete('/delete/:id_user', usuarioController.deletarUsuario);
 
 router.put('/edit/trocar-senha', usuarioController.trocaSenhaporEmail);
 router.put("/dados/:id_user", usuarioController.trocaSenha);
+
+router.post('/cadastrar', uploadFields, usuarioController.registrarNumeroTelefone);
+router.put('/concluir-cadastro/:id_user', uploadFields, usuarioController.concluirRegistro);
+
+
 
 
 module.exports = router;

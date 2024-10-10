@@ -12,11 +12,11 @@ const Usuario = conn.define("tb_usuario", {
   },
   nome: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   sobrenome: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   numero_telefone: {
     type: DataTypes.STRING,
@@ -25,12 +25,12 @@ const Usuario = conn.define("tb_usuario", {
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
   },
   senha: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   avatar: {
     type: DataTypes.STRING,

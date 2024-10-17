@@ -134,12 +134,20 @@ const registrarNumeroTelefone = async (req, res) => {
       numero_telefone: numero_telefone,
       id_nivel: 3,
       id_status: 1,
-      pin_registro: null,
+    });
+
+    const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const code = await Code.create({
+      type_code: 1,
+      code: codigoAleatorio,
+      id_user: novoUsuario.id_user,
     });
 
     return res.status(201).send({
       mensagem: "Número de telefone registrado com sucesso.",
       id_user: novoUsuario.id_user,
+      code: code,
     });
   } catch (error) {
     console.log(error);

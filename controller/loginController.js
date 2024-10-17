@@ -9,8 +9,10 @@ const SalaConvidado = require("../models/tb_sala_convidado");
 
 const autenticarUsuarioApp = async (req, res, next) => {
   try {
-    const { email, senha } = req.body;
-    const user = await Usuario.findOne({ where: { email: email } });
+    const { numero_telefone, senha } = req.body;
+    const user = await Usuario.findOne({
+      where: { numero_telefone: numero_telefone },
+    });
 
     if (!user) {
       return res.status(401).send({
@@ -24,7 +26,7 @@ const autenticarUsuarioApp = async (req, res, next) => {
         { status: 0 },
         { where: { id_user: user.id_user, status: 1 } }
       );
-   
+
       const salaAnfitriao = await Sala.findOne({
         where: { id_usuario_anfitriao: user.id_user },
       });
@@ -52,6 +54,7 @@ const autenticarUsuarioApp = async (req, res, next) => {
           avatar: user.avatar,
           id_nivel: user.id_nivel,
           id_status: user.id_status,
+          numero_telefone: user.numero_telefone,
           config: user.config,
           role: role,
           salaId: salaId,

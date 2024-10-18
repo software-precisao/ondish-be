@@ -9,10 +9,9 @@ const Sala = require("../models/tb_sala");
 const Mesa = require("../models/tb_mesa");
 const Usuario = require("../models/tb_usuarios");
 const AtividadePedido = require("../models/tb_atividade_pedido");
-const Sobremesa = require("../models/tb_sobremesas")
-const logPedido = require("./logsPedidoController"); 
+const Sobremesa = require("../models/tb_sobremesas");
+const logPedido = require("./logsPedidoController");
 const { Op } = require("sequelize");
-
 
 const gerarNumeroPedido = () => {
   return Math.floor(Math.random() * 90000) + 10000;
@@ -75,20 +74,24 @@ const obterPedidosPorMesa = async (req, res) => {
 
   try {
     const pedidos = await Pedido.findAll({
-      where: { id_mesa },  
+      where: { id_mesa },
       include: {
-        model: Mesa,  
-        as: 'mesa'
-      }
+        model: Mesa,
+        as: "mesa",
+      },
     });
 
     if (pedidos.length === 0) {
-      return res.status(404).json({ message: 'Nenhum pedido encontrado para esta mesa.' });
+      return res
+        .status(404)
+        .json({ message: "Nenhum pedido encontrado para esta mesa." });
     }
 
     return res.status(200).json(pedidos);
   } catch (error) {
-    return res.status(500).json({ message: 'Erro ao buscar os pedidos.', error });
+    return res
+      .status(500)
+      .json({ message: "Erro ao buscar os pedidos.", error });
   }
 };
 
@@ -104,10 +107,7 @@ const criarPedidoComItens = async (req, res) => {
       itens,
     } = req.body;
 
-    await Mesa.update(
-      { id_status_mesa: 2 },
-      { where: { id_mesa } }
-    );
+    await Mesa.update({ id_status_mesa: 2 }, { where: { id_mesa } });
 
     const numero_pedido = gerarNumeroPedido();
 
@@ -122,13 +122,20 @@ const criarPedidoComItens = async (req, res) => {
     });
 
     for (const item of itens) {
-      const { id_prato, id_bebida, id_sobremesa, quantidade, instruction, opcoes } = item;
+      const {
+        id_prato,
+        id_bebida,
+        id_sobremesa,
+        quantidade,
+        instruction,
+        opcoes,
+      } = item;
 
       const novoItem = await ItensPedido.create({
         id_pedido: pedido.id_pedido,
         id_prato,
         id_bebida,
-        id_sobremesa, 
+        id_sobremesa,
         quantidade,
         valor: item.valor,
         observacoes: instruction,
@@ -155,7 +162,7 @@ const criarPedidoComItens = async (req, res) => {
     }
 
     const mensagem = `Foi realizado um pedido com o n°: ${numero_pedido}, com o valor: ${valor_total} na mesa: ${id_mesa}, com o status: ${status}, às: ${pedido.createdAt}`;
-    console.log(mensagem)
+    console.log(mensagem);
     await logPedido.criarLog(pedido.id_pedido, mensagem);
 
     return res.status(201).send({
@@ -224,7 +231,6 @@ const obterPedido = async (req, res) => {
           model: Restaurante,
           as: "restaurante",
         },
-       
       ],
     });
 
@@ -290,7 +296,6 @@ const obterPedidoRestaurante = async (req, res) => {
           model: Restaurante,
           as: "restaurante",
         },
-       
       ],
     });
 
@@ -344,21 +349,18 @@ const atualizarStatusPedido = async (req, res) => {
 };
 
 const obterPedidoPorUsuarioMesa = async (req, res) => {
-
-  try{
-
+  try {
     const { id_usuario, id_mesa } = req.params;
 
-    if(!id_usuario || !id_mesa){
-      return res.status(400).send({mensagem: "Parâmetros inválidos"});
+    if (!id_usuario || !id_mesa) {
+      return res.status(400).send({ mensagem: "Parâmetros inválidos" });
     }
 
     const pedido = await Pedido.findAll({
       where: {
         id_usuario,
         id_mesa: id_mesa,
-        status: "Entregue na mesa"
-    },
+      },
       include: [
         {
           model: ItensPedido,
@@ -381,46 +383,43 @@ const obterPedidoPorUsuarioMesa = async (req, res) => {
               as: "sobremesa",
             },
           ],
-        },]
-        
-  })
+        },
+      ],
+    });
 
-  if(!pedido){
-    return res.status(404).send({mensagem: "Pedido não encontrado"});
-  }
+    if (!pedido) {
+      return res.status(404).send({ mensagem: "Pedido não encontrado" });
+    }
 
-  let total = pedido.reduce((acc, item) => acc + parseFloat(item.valor_total), 0);
+    let total = pedido.reduce(
+      (acc, item) => acc + parseFloat(item.valor_total),
+      0
+    );
 
-
-  return res.status(200).json({
-    success: true,
-    total_pedido: total ?? 0,
-    pedidos: pedido
-  })
-  }
-  catch(error){
+    return res.status(200).json({
+      success: true,
+      total_pedido: total ?? 0,
+      pedidos: pedido,
+    });
+  } catch (error) {
     console.error("Erro ao obter pedido:", error.message);
     return res.status(500).send({ error: error.message });
   }
-
-  
-}
+};
 
 const obterPedidoNaoPagos = async (req, res) => {
-
-  try{
-
+  try {
     const { id_user, id_mesa } = req.params;
 
-    if(!id_user){
-      return res.status(400).send({mensagem: "Parâmetros inválidos"});
+    if (!id_user) {
+      return res.status(400).send({ mensagem: "Parâmetros inválidos" });
     }
 
     const mesa = await Mesa.findOne({
       where: {
-        id_mesa
-      }
-    })
+        id_mesa,
+      },
+    });
 
     const pedido = await Pedido.findAll({
       where: {
@@ -428,8 +427,9 @@ const obterPedidoNaoPagos = async (req, res) => {
         id_mesa: id_mesa,
         status: {
           [Op.ne]: "Pago",
-          [Op.ne]: "Cancelado"
-        }},
+          [Op.ne]: "Cancelado",
+        },
+      },
       include: [
         {
           model: ItensPedido,
@@ -452,33 +452,30 @@ const obterPedidoNaoPagos = async (req, res) => {
               as: "sobremesa",
             },
           ],
-        },]}
-      )
+        },
+      ],
+    });
 
+    if (!pedido) {
+      return res.status(404).send({ mensagem: "Pedido não encontrado" });
+    }
 
-    
-  if(!pedido){
-    return res.status(404).send({mensagem: "Pedido não encontrado"});
-  }
+    const total = pedido.reduce(
+      (acc, item) => acc + parseFloat(item.valor_total),
+      0
+    );
 
-  const total = pedido.reduce((acc, item) => acc + parseFloat(item.valor_total), 0);
-
-  return res.status(200).json({
-    success: true,
-    pedidos: pedido,
-    total_pedido: total ?? 0,
-    mesa: mesa
-  })
-   
-
-  }
-  catch(error){
+    return res.status(200).json({
+      success: true,
+      pedidos: pedido,
+      total_pedido: total ?? 0,
+      mesa: mesa,
+    });
+  } catch (error) {
     console.error("Erro ao obter pedido:", error.message);
     return res.status(500).send({ error: error.message });
   }
-
-}
-
+};
 
 module.exports = {
   criarPedidoComItens,
@@ -489,5 +486,5 @@ module.exports = {
   obterPedidoPorUsuarioMesa,
   obterPedidoNaoPagos,
   obterTodosPedidos,
-  obterPedidosPorMesa
+  obterPedidosPorMesa,
 };

@@ -70,6 +70,28 @@ const obterTodosPedidos = async (req, res) => {
   }
 };
 
+const obterPedidosPorMesa = async (req, res) => {
+  const { id_mesa } = req.params;
+
+  try {
+    const pedidos = await Pedido.findAll({
+      where: { id_mesa },  
+      include: {
+        model: Mesa,  
+        as: 'mesa'
+      }
+    });
+
+    if (pedidos.length === 0) {
+      return res.status(404).json({ message: 'Nenhum pedido encontrado para esta mesa.' });
+    }
+
+    return res.status(200).json(pedidos);
+  } catch (error) {
+    return res.status(500).json({ message: 'Erro ao buscar os pedidos.', error });
+  }
+};
+
 const criarPedidoComItens = async (req, res) => {
   try {
     const {
@@ -466,5 +488,6 @@ module.exports = {
   obterStatusPedido,
   obterPedidoPorUsuarioMesa,
   obterPedidoNaoPagos,
-  obterTodosPedidos
+  obterTodosPedidos,
+  obterPedidosPorMesa
 };

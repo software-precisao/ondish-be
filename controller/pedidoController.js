@@ -18,6 +18,58 @@ const gerarNumeroPedido = () => {
   return Math.floor(Math.random() * 90000) + 10000;
 };
 
+const obterTodosPedidos = async (req, res) => {
+  try {
+    const pedidos = await Pedido.findAll({
+      include: [
+        {
+          model: ItensPedido,
+          as: "itens_pedido",
+          include: [
+            {
+              model: Pratos,
+              as: "prato",
+            },
+            {
+              model: Bebida,
+              as: "bebida",
+            },
+            {
+              model: Opcoes,
+              as: "opcoes",
+            },
+            {
+              model: Sobremesa,
+              as: "sobremesa",
+            },
+          ],
+        },
+        {
+          model: Sala,
+          as: "sala",
+        },
+        {
+          model: Usuario,
+          as: "usuario",
+        },
+        {
+          model: Restaurante,
+          as: "restaurante",
+        },
+      ],
+    });
+
+    if (!pedidos || pedidos.length === 0) {
+      return res.status(404).send({ mensagem: "Nenhum pedido encontrado." });
+    }
+
+    return res.status(200).send(pedidos);
+  } catch (error) {
+    console.error("Erro ao obter pedidos:", error);
+    return res.status(500).send({ error: error.message });
+  }
+};
+
 const criarPedidoComItens = async (req, res) => {
   try {
     const {
@@ -413,5 +465,6 @@ module.exports = {
   atualizarStatusPedido,
   obterStatusPedido,
   obterPedidoPorUsuarioMesa,
-  obterPedidoNaoPagos
+  obterPedidoNaoPagos,
+  obterTodosPedidos
 };

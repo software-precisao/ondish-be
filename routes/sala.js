@@ -12,6 +12,7 @@ router.put("/convite/:id_sala/:id_usuario", salaController.atualizarStatusConvit
 router.put("/entrar/:id_sala/:id_usuario", salaController.entrarSala);
 router.get('/:id', salaController.obterSala);
 router.delete("/:id", salaController.deletarSala);
+router.post('/criarSalaSemConvidado', salaController.criarSalaSemConvidado);
 
 
 module.exports = router;

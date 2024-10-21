@@ -173,8 +173,6 @@ router.get("/", restauranteController.buscarTodos);
 
 router.get("/:id", restauranteController.buscarRestaurantePorId);
 
-
-
 /**
  * @swagger
  * /restaurante/delete/{id_restaurante}:
@@ -200,5 +198,7 @@ router.delete(
   "/delete/:id_restaurante",
   restauranteController.deletarRestaurante
 );
+
+router.get("/busca", restauranteController.buscarLocaisRestaurante);
 
 module.exports = router;

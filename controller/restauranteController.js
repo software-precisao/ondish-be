@@ -8,6 +8,7 @@ const Qrcode = require("../models/tb_qrcode");
 const Usuario = require("../models/tb_usuarios");
 const Avaliacao = require("../models/tb_avaliacao");
 const Mesa = require("../models/tb_mesa");
+const locaisPreConfigurados = require("../constants/cities");
 
 const restauranteController = {
   criarRestaurante: async (req, res) => {
@@ -46,7 +47,7 @@ const restauranteController = {
         id_mesa: req.body.id_mesa, 
       });
  */
-      
+
       let id_user = req.body.id_user;
 
       const usuario = await Usuario.findByPk(id_user);
@@ -156,7 +157,7 @@ const restauranteController = {
       await Mesa.destroy({
         where: { id_restaurante: id_restaurante },
       });
-      
+
       await Avaliacao.destroy({
         where: { id_restaurante: id_restaurante },
       });
@@ -179,6 +180,26 @@ const restauranteController = {
       });
     }
   },
+
+buscarLocaisRestaurante: (req, res) => {
+  const termoBusca = req.query.termo || "";
+  console.log("Termo de busca:", termoBusca);
+  
+  const termoNormalizado = termoBusca.toLowerCase();
+  const locaisFiltrados = locaisPreConfigurados.filter((local) =>
+    local.nome.toLowerCase().includes(termoNormalizado)
+  );
+
+  console.log("Locais pre-configurados:", locaisPreConfigurados);
+
+  if (locaisFiltrados.length === 0) {
+    return res.status(404).json({ mensagem: "Nenhum local encontrado." });
+  }
+  console.log("Locais filtrados:", locaisFiltrados);
+
+  return res.status(200).json(locaisFiltrados);
+},
+
 };
 
 module.exports = restauranteController;

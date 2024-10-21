@@ -576,6 +576,61 @@ const deletarSala = async (req, res) => {
   }
 };
 
+const criarSalaSemConvidado = async (req, res) => {
+  try {
+    const {
+      nome_sala,
+      id_restaurante,
+      id_mesa,
+      id_usuario_anfitriao,
+      status_anfitriao,
+    } = req.body;
+
+    const anfitriao = await Usuario.findByPk(id_usuario_anfitriao, {
+      attributes: ["id_user", "nome", "sobrenome"],
+    });
+
+    if (!anfitriao) {
+      return res.status(404).json({ mensagem: "Anfitrião não encontrado." });
+    }
+
+    const mesa = await Mesa.findOne({
+      where: { id_mesa: id_mesa },
+    });
+
+    if (!mesa) {
+      return res.status(404).json({ mensagem: "Mesa não encontrada." });
+    }
+
+    const novaSala = await Sala.create({
+      nome_sala,
+      numero_mesa: mesa.numero,
+      id_restaurante,
+      id_mesa,
+      id_usuario_anfitriao,
+      status_anfitriao,
+      status: "aberta", 
+    });
+
+    await AtividadeSala.create({
+      id_sala: novaSala.id_sala,
+      id_restaurante: novaSala.id_restaurante,
+      descricao: "Sala criada sem convidados",
+      status: 1,
+    });
+
+    res.status(201).json({
+      success: true,
+      mensagem: "Sala criada com sucesso!",
+      sala: novaSala,
+    });
+
+  } catch (error) {
+    console.error("Erro ao criar sala:", error);
+    res.status(500).json({ mensagem: "Erro ao criar sala.", error: error.message });
+  }
+};
+
 module.exports = {
   criarSala,
   convidado,
@@ -586,5 +641,6 @@ module.exports = {
   atualizarStatusConvite,
   deletarSala,
   criarSalaWithoutConvidados,
-  entrarSala
+  entrarSala,
+  criarSalaSemConvidado
 };

@@ -79,6 +79,7 @@ const rotaSobremesa = require("./routes/sobremesa");
 const rotaStatusMesa = require("./routes/statusMesa");
 const rotaLogs = require("./routes/logs");
 const rotaBoasVindas = require("./routes/boasVindas")
+const rotaLatLong = require("./routes/lat_long")
 
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -151,6 +152,7 @@ app.use("/sobremesa", rotaSobremesa);
 app.use("/status-mesa", rotaStatusMesa);
 app.use("/logs", rotaLogs);
 app.use("/boas-vindas", rotaBoasVindas)
+app.use("/lat", rotaLatLong)
 
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));

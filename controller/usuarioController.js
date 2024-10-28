@@ -6,118 +6,54 @@ const Token = require("../models/tb_token");
 const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
 
-
 const nodemailer = require("nodemailer");
 const path = require("path");
 const { Sequelize } = require("sequelize");
 const fs = require("fs").promises;
 require("dotenv").config();
 
-// const criarUsuario = async (req, res, next) => {
-//   try {
-//     const telefoneExistente = await Usuario.findOne({
-//       where: { numero_telefone: req.body.numero_telefone },
-//     });
+const enviarEmail = async (
+  destinatario,
+  assunto,
+  templatePath,
+  placeholders
+) => {
+  try {
+    const htmlContent = await fs.readFile(templatePath, "utf8");
+    const htmlWithPlaceholders = Object.keys(placeholders).reduce(
+      (content, placeholder) =>
+        content.replace(`{{${placeholder}}}`, placeholders[placeholder]),
+      htmlContent
+    );
 
-//     if (telefoneExistente) {
-//       return res.status(409).send({
-//         mensagem: "Número de telefone já cadastrado, por favor insira outro!",
-//       });
-//     }
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        ciphers: "TLSv1",
+      },
+    });
 
-//     const usuarioExistente = await Usuario.findOne({
-//       where: { email: req.body.email },
-//     });
+    const mailOptions = {
+      from: `"Equipa Ondish Foods" <${process.env.EMAIL_FROM}>`,
+      to: destinatario,
+      subject: assunto,
+      html: htmlWithPlaceholders,
+    };
 
-//     if (usuarioExistente) {
-//       return res.status(409).send({
-//         mensagem: "Email já cadastrado, por favor insira um email diferente!",
-//       });
-//     }
-
-//     const hashedPassword = await bcrypt.hash(req.body.senha, 10);
-
-//     const filename = req.files.avatar
-//       ? req.files.avatar[0].filename
-//       : "default-avatar.png";
-
-//     const novoUsuario = await Usuario.create({
-//       nome: req.body.nome,
-//       sobrenome: req.body.sobrenome,
-//       numero_telefone: req.body.numero_telefone,
-//       email: req.body.email,
-//       senha: hashedPassword,
-//       id_nivel: 3,
-//       id_status: 1,
-//       avatar: `/avatar/${filename}`,
-//     });
-
-//     const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
-
-//     const code = await Code.create({
-//       type_code: 1,
-//       code: codigoAleatorio,
-//       id_user: novoUsuario.id_user,
-//     });
-
-//     const htmlFilePath = path.join(__dirname, "../template/code/index.html");
-//     let htmlContent = await fs.readFile(htmlFilePath, "utf8");
-
-//     htmlContent = htmlContent
-//       .replace("{{nome}}", novoUsuario.nome)
-//       .replace("{{email}}", novoUsuario.email)
-//       .replace("{{code}}", code.code);
-
-//     const transporter = nodemailer.createTransport({
-//       host: process.env.EMAIL_HOST,
-//       port: process.env.EMAIL_PORT,
-//       secure: true,
-//       auth: {
-//         user: process.env.EMAIL_USER,
-//         pass: process.env.EMAIL_PASS,
-//       },
-//       tls: {
-//         ciphers: "TLSv1",
-//       },
-//     });
-
-//     let mailOptions = {
-//       from: `"Equipa Ondish Foods" ${process.env.EMAIL_FROM}`,
-//       to: req.body.email,
-//       subject: "🔒 Código de verificação Ondish!",
-//       html: htmlContent,
-//     };
-
-//     let info = await transporter.sendMail(mailOptions);
-//     console.log("Mensagem enviada: %s", info.messageId);
-
-//     const tokenUsuario = await Token.create({
-//       id_user: novoUsuario.id_user,
-//       token: uuidv4(),
-//     });
-
-//     const response = {
-//       mensagem: "Usuário cadastrado com sucesso e Token único gerado!",
-//       usuarioCriado: {
-//         id_user: novoUsuario.id_user,
-//         nome: novoUsuario.nome,
-//         email: novoUsuario.email,
-//         nivel: novoUsuario.id_nivel,
-//         token_unico: tokenUsuario.token,
-//         code: code.code,
-//         request: {
-//           tipo: "GET",
-//           descricao: "Pesquisar um usuário",
-//           url: `https://trustchecker.com.br/api/usuarios/${novoUsuario.id_user}`,
-//         },
-//       },
-//     };
-
-//     return res.status(202).send(response);
-//   } catch (error) {
-//     return res.status(500).send({ error: error.message });
-//   }
-// };
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Mensagem enviada: %s", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("Erro ao enviar e-mail:", error);
+    return false;
+  }
+};
 
 const registrarNumeroTelefone = async (req, res) => {
   try {
@@ -309,37 +245,6 @@ const recuperarSenha = async (req, res, next) => {
       id_user: usuarioExistente.id_user,
     });
 
-    const htmlFilePath = path.join(__dirname, "../template/code/index.html");
-    let htmlContent = await fs.readFile(htmlFilePath, "utf8");
-
-    htmlContent = htmlContent
-      .replace("{{nome}}", usuarioExistente.nome)
-      .replace("{{email}}", usuarioExistente.email)
-      .replace("{{code}}", code.code);
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      tls: {
-        ciphers: "TLSv1",
-      },
-    });
-
-    let mailOptions = {
-      from: `"Equipa Ondish Foods" ${process.env.EMAIL_FROM}`,
-      to: email,
-      subject: "🔒 Código de Recuperação de Senha Ondish!`,",
-      html: htmlContent,
-    };
-
-    let info = await transporter.sendMail(mailOptions);
-    console.log("Mensagem enviada: %s", info.messageId);
-
     return res.status(200).send({
       mensagem: "Código de recuperação enviado com sucesso!",
       id_user: usuarioExistente.id_user,
@@ -417,7 +322,7 @@ const atualizarUsuario = async (req, res, next) => {
       const emailExistente = await Usuario.findOne({
         where: {
           email,
-          id_user: { [Op.ne]: req.params.id_user }, 
+          id_user: { [Op.ne]: req.params.id_user },
         },
       });
       if (emailExistente) {
@@ -435,11 +340,9 @@ const atualizarUsuario = async (req, res, next) => {
         },
       });
       if (telefoneExistente) {
-        return res
-          .status(400)
-          .send({
-            message: "Número de telefone já cadastrado por outro usuário.",
-          });
+        return res.status(400).send({
+          message: "Número de telefone já cadastrado por outro usuário.",
+        });
       }
     }
 
@@ -452,7 +355,7 @@ const atualizarUsuario = async (req, res, next) => {
       sobrenome,
       email,
       numero_telefone,
-      avatar: req.body.avatar || usuario.avatar, 
+      avatar: req.body.avatar || usuario.avatar,
     });
 
     res.status(200).send({
@@ -522,34 +425,6 @@ const trocaSenhaporEmail = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(senha, 10);
     usuario.senha = hashedPassword;
 
-    const htmlFilePath = path.join(__dirname, "../template/auth/senha.html");
-    let htmlContent = await fs.readFile(htmlFilePath, "utf8");
-
-    htmlContent = htmlContent.replace("{{email}}", usuario.email);
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      tls: {
-        ciphers: "TLSv1",
-      },
-    });
-
-    let mailOptions = {
-      from: `"Equipe Ondish" ${process.env.EMAIL_FROM}`,
-      to: email,
-      subject: "🔒 Senha alterada com sucesso!",
-      html: htmlContent,
-    };
-
-    let info = await transporter.sendMail(mailOptions);
-    console.log("Mensagem enviada: %s", info.messageId);
-
     await usuario.save();
 
     return res.status(200).send({ mensagem: "Senha alterada com sucesso!" });
@@ -571,4 +446,5 @@ module.exports = {
   trocaSenhaporEmail,
   registrarNumeroTelefone,
   concluirRegistro,
+  enviarEmail
 };

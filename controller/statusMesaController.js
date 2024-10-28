@@ -1,3 +1,4 @@
+const Mesa = require("../models/tb_mesa");
 const StatusMesa = require("../models/tb_status_mesa");
 
 const criarStatusMesa = async (req, res) => {
@@ -11,8 +12,8 @@ const criarStatusMesa = async (req, res) => {
 };
 
 const atualizarStatusMesa = async (req, res) => {
-  const { id_mesa } = req.params;
-  const { id_status_mesa } = req.body; 
+  const { id_status_mesa } = req.params;
+  const { id_mesa } = req.body;
 
   try {
     const mesa = await Mesa.findByPk(id_mesa);

@@ -39,6 +39,8 @@ const Opcoes = conn.define(
 Opcoes.belongsTo(Prato, {
   foreignKey: "id_pratos",
   as: "prato",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = Opcoes;

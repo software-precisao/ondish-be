@@ -29,12 +29,16 @@ ItensPedido.belongsToMany(Opcao, {
   through: ItensPedidoOpcoes,
   as: 'opcoes',
   foreignKey: 'id_item_pedido',
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Opcao.belongsToMany(ItensPedido, {
   through: ItensPedidoOpcoes,
   as: 'itens_pedido',
   foreignKey: 'id_opcao',
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = ItensPedidoOpcoes;

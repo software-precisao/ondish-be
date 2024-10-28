@@ -49,17 +49,22 @@ const ItensPedido = conn.define(
 ItensPedido.belongsTo(Sobremesa, {
   foreignKey: "id_sobremesa",
   as: "sobremesa",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 ItensPedido.belongsTo(Prato, {
   foreignKey: "id_prato",
   as: "prato",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 ItensPedido.belongsTo(Bebida, {
   foreignKey: "id_bebida",
   as: "bebida",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
-
 
 module.exports = ItensPedido;

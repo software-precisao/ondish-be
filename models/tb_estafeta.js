@@ -53,11 +53,15 @@ const Estafeta = conn.define("tb_estafeta", {
 Estafeta.belongsTo(Usuario, {
     foreignKey: "id_user",
     foreignKeyConstraint: true,
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
 });
 
 Estafeta.belongsTo(Veiculo, {
     foreignKey: "id_veiculo",
     foreignKeyConstraint: true,
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
 });
 
 

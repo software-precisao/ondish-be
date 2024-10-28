@@ -27,6 +27,8 @@ const FotoPratos = conn.define(
 FotoPratos.belongsTo(Pratos, {
   foreignKey: "id_pratos",
   as: "prato",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = FotoPratos;

@@ -26,11 +26,15 @@ const FotoSobremesas = conn.define(
 FotoSobremesas.belongsTo(Sobremesa, {
   foreignKey: "id_sobremesa",
   as: "sobremesa",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Sobremesa.hasMany(FotoSobremesas, {
   foreignKey: "id_sobremesa",
   as: "imagens",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = FotoSobremesas;

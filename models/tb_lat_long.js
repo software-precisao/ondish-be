@@ -40,6 +40,8 @@ const LatLong = conn.define(
 LatLong.belongsTo(Usuario, {
   foreignKey: "id_user",
   foreignKeyConstraint: true,
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = LatLong;

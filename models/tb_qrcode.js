@@ -4,38 +4,41 @@ const conn = require("../data/conn");
 const Restaurante = require("./tb_restaurante");
 const Mesa = require("./tb_mesa");
 
-const Qrcode = conn.define("tb_qrcode", {
+const Qrcode = conn.define(
+  "tb_qrcode",
+  {
     id_qrcode: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
     },
     qrcode: {
-        type: DataTypes.TEXT,
-        allowNull: true,
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     id_restaurante: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
     id_mesa: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
-
-
-}, { freezeTableName: true });
-
+  },
+  { freezeTableName: true }
+);
 
 Qrcode.belongsTo(Restaurante, {
-    foreignKey: "id_restaurante",
-    foreignKeyConstraint: true,
+  foreignKey: "id_restaurante",
+  foreignKeyConstraint: true,
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 Qrcode.belongsTo(Mesa, {
-    foreignKey: "id_mesa",
-    foreignKeyConstraint: true,
+  foreignKey: "id_mesa",
+  foreignKeyConstraint: true,
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
-
-
 
 module.exports = Qrcode;

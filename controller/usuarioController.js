@@ -4,6 +4,8 @@ const Usuario = require("../models/tb_usuarios");
 const Code = require("../models/tb_code");
 const Token = require("../models/tb_token");
 const { v4: uuidv4 } = require("uuid");
+const { Op } = require("sequelize");
+
 
 const nodemailer = require("nodemailer");
 const path = require("path");
@@ -409,11 +411,49 @@ const atualizarUsuario = async (req, res, next) => {
       return res.status(404).send({ message: "Usuário não encontrado" });
     }
 
+    const { nome, sobrenome, email, numero_telefone } = req.body;
+
+    if (email) {
+      const emailExistente = await Usuario.findOne({
+        where: {
+          email,
+          id_user: { [Op.ne]: req.params.id_user }, 
+        },
+      });
+      if (emailExistente) {
+        return res
+          .status(400)
+          .send({ message: "Email já cadastrado por outro usuário." });
+      }
+    }
+
+    if (numero_telefone) {
+      const telefoneExistente = await Usuario.findOne({
+        where: {
+          numero_telefone,
+          id_user: { [Op.ne]: req.params.id_user },
+        },
+      });
+      if (telefoneExistente) {
+        return res
+          .status(400)
+          .send({
+            message: "Número de telefone já cadastrado por outro usuário.",
+          });
+      }
+    }
+
     if (req.files && req.files.avatar) {
       req.body.avatar = `/avatar/${req.files.avatar[0].filename}`;
     }
 
-    await usuario.update(req.body);
+    await usuario.update({
+      nome,
+      sobrenome,
+      email,
+      numero_telefone,
+      avatar: req.body.avatar || usuario.avatar, 
+    });
 
     res.status(200).send({
       mensagem: "Usuário atualizado com sucesso!",

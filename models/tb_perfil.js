@@ -34,6 +34,8 @@ const Perfil = conn.define(
 Perfil.belongsTo(Usuario, {
   foreignKey: "id_user",
   foreignKeyConstraint: true,
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = Perfil;

@@ -75,6 +75,8 @@ const Restaurante = conn.define(
 Restaurante.belongsTo(Usuario, {
   foreignKey: "id_user",
   foreignKeyConstraint: true,
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 

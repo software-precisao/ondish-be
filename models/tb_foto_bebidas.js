@@ -28,11 +28,15 @@ const FotoBebidas = conn.define(
 FotoBebidas.belongsTo(Bebida, {
   foreignKey: "id_bebida",
   as: "bebida",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Bebida.hasMany(FotoBebidas, {
   foreignKey: "id_bebida",
   as: "imagens",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 

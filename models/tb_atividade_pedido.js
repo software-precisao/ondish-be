@@ -36,11 +36,15 @@ const AtividadePedido = conn.define(
 AtividadePedido.belongsTo(Restaurante, {
   foreignKey: "id_restaurante",
   as: "restaurante",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 AtividadePedido.belongsTo(Pedido, {
   foreignKey: "id_pedido",
   foreignKeyConstraint: true,
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = AtividadePedido;

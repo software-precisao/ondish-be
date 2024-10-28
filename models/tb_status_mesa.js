@@ -19,6 +19,4 @@ const StatusMesa = conn.define(
   { freezeTableName: true }
 );
 
-
-
 module.exports = StatusMesa;

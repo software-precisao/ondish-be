@@ -33,6 +33,8 @@ const Code = conn.define(
 Code.belongsTo(Usuario, {
   foreignKey: "id_user",
   foreignKeyConstraint: true,
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = Code;

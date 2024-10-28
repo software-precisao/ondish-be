@@ -38,6 +38,8 @@ const Bebida = conn.define(
 Bebida.belongsTo(Restaurante, {
   foreignKey: "id_restaurante",
   as: "restaurante",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 

@@ -50,26 +50,36 @@ const Pedido = conn.define(
 Pedido.belongsTo(Usuario, {
   foreignKey: "id_usuario",
   as: "usuario",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Pedido.belongsTo(Restaurante, {
   foreignKey: "id_restaurante",
   as: "restaurante",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Pedido.belongsTo(Sala, {
   foreignKey: "id_sala",
   as: "sala",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Pedido.belongsTo(Mesa, {
   foreignKey: "id_mesa",
   as: "mesa",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Pedido.hasMany(ItensPedido, {
   foreignKey: "id_pedido",
   as: "itens_pedido",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 

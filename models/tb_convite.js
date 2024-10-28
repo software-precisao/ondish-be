@@ -35,16 +35,22 @@ const Convite = conn.define(
   Convite.belongsTo(Pedido, {
     foreignKey: "id_pedido",
     as: "pedido",
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   });
   
   Convite.belongsTo(Usuario, {
     foreignKey: "id_usuario_convidado",
     as: "usuario_convidado",
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   });
   
   Convite.belongsTo(Usuario, {
     foreignKey: "id_usuario_convidante",
     as: "usuario_convidante",
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
   });
   
   module.exports = Convite;

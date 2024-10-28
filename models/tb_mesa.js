@@ -47,11 +47,15 @@ const Mesa = conn.define(
 Mesa.belongsTo(Restaurante, {
   foreignKey: "id_restaurante",
   as: "restaurante",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Mesa.belongsTo(StatusMesa, {
   foreignKey: "id_status_mesa",
   as: "status_mesa",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = Mesa;

@@ -56,12 +56,16 @@ const Pratos = conn.define(
 Pratos.belongsTo(Restaurante, {
   foreignKey: "id_restaurante",
   as: "restaurante",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Pratos.belongsTo(CozinhaRestaurante, {
   foreignKey: "id_cozinha_restaurante",
   as: "cozinha_restaurante",
   foreignKeyConstraint: true,
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 module.exports = Pratos;

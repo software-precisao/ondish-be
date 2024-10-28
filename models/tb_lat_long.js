@@ -17,9 +17,13 @@ const LatLong = conn.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    id_restaurante: {
+    cep: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
+    },
+    endereco: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     latitude: {
       type: DataTypes.STRING,
@@ -37,9 +41,5 @@ LatLong.belongsTo(Usuario, {
   foreignKey: "id_user",
   foreignKeyConstraint: true,
 });
-LatLong.belongsTo(Restaurante, {
-    foreignKey: "id_restaurante",
-    foreignKeyConstraint: true,
-  });
 
 module.exports = LatLong;

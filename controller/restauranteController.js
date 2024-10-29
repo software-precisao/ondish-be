@@ -136,6 +136,9 @@ const restauranteController = {
             model: Avaliacao,
             as: "avaliacoes",
           },
+          {
+            model: Usuario,
+          },
         ],
       });
 

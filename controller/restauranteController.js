@@ -3,6 +3,8 @@ const LatLong = require("../models/tb_lat_long");
 const Pratos = require("../models/tb_pratos");
 const Fotos = require("../models/tb_foto_pratos");
 const QRCode = require("qrcode");
+const Opcoes = require("../models/tb_opcoes");
+const Cozinha = require("../models/tb_cozinha_restaurante");
 const Qrcode = require("../models/tb_qrcode");
 
 const Usuario = require("../models/tb_usuarios");
@@ -86,7 +88,33 @@ const restauranteController = {
 
   buscarTodos: async (req, res) => {
     try {
-      const restaurantes = await Restaurante.findAll();
+      const restaurantes = await Restaurante.findAll({
+        include: [
+          {
+            model: Pratos,
+            as: "pratos",
+            include: [
+              {
+                model: Opcoes,
+                as: "opcoes",
+              },
+              {
+                model: Fotos,
+                as: "fotos",
+              },
+            ],
+          },
+          {
+            model: Cozinha,
+            as: "cozinha_restaurante",
+          },
+          {
+            model: Avaliacao,
+            as: "avaliacoes",
+          },
+        ],
+      });
+
       return res.status(200).send(restaurantes);
     } catch (error) {
       console.error("Erro ao buscar restaurantes: ", error);
@@ -181,25 +209,24 @@ const restauranteController = {
     }
   },
 
-buscarLocaisRestaurante: (req, res) => {
-  const termoBusca = req.query.termo || "";
-  console.log("Termo de busca:", termoBusca);
-  
-  const termoNormalizado = termoBusca.toLowerCase();
-  const locaisFiltrados = locaisPreConfigurados.filter((local) =>
-    local.nome.toLowerCase().includes(termoNormalizado)
-  );
+  buscarLocaisRestaurante: (req, res) => {
+    const termoBusca = req.query.termo || "";
+    console.log("Termo de busca:", termoBusca);
 
-  console.log("Locais pre-configurados:", locaisPreConfigurados);
+    const termoNormalizado = termoBusca.toLowerCase();
+    const locaisFiltrados = locaisPreConfigurados.filter((local) =>
+      local.nome.toLowerCase().includes(termoNormalizado)
+    );
 
-  if (locaisFiltrados.length === 0) {
-    return res.status(404).json({ mensagem: "Nenhum local encontrado." });
-  }
-  console.log("Locais filtrados:", locaisFiltrados);
+    console.log("Locais pre-configurados:", locaisPreConfigurados);
 
-  return res.status(200).json(locaisFiltrados);
-},
+    if (locaisFiltrados.length === 0) {
+      return res.status(404).json({ mensagem: "Nenhum local encontrado." });
+    }
+    console.log("Locais filtrados:", locaisFiltrados);
 
+    return res.status(200).json(locaisFiltrados);
+  },
 };
 
 module.exports = restauranteController;

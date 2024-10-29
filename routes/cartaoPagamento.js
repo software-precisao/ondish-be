@@ -16,4 +16,7 @@ router.delete(
   metodoPagamentoController.deleteMetodoPagamento
 );
 
+router.put("/editar/:id_metodo_pagamento", metodoPagamentoController.editarMetodoPagamento);
+
+
 module.exports = router;

@@ -44,7 +44,7 @@ const metodoPagamentoController = {
 
       return res.status(201).send({
         mensagem: "Método de pagamento adicionado com sucesso.",
-        id_cartao: novoMetodoPagamento.id_metodo_pagamento,
+        id_metodo_pagamento: novoMetodoPagamento.id_metodo_pagamento,
       });
     } catch (error) {
       console.error("Erro ao adicionar método de pagamento: ", error);
@@ -72,6 +72,38 @@ const metodoPagamentoController = {
       return res
         .status(500)
         .send({ mensagem: "Erro ao buscar método de pagamento." });
+    }
+  },
+
+  editarMetodoPagamento: async (req, res) => {
+    try {
+      const { id_metodo_pagamento } = req.params;
+      const { id_user, numero_cartao, data_validade, cvc } = req.body;
+
+      if (!id_user || !numero_cartao || !data_validade || !cvc) {
+        return res.status(400).send({ mensagem: "Todos os campos são obrigatórios." });
+      }
+
+      const metodoPagamento = await MetodoPagamento.findOne({ where: { id_metodo_pagamento, id_user } });
+      if (!metodoPagamento) {
+        return res.status(404).send({ mensagem: "Cartão não encontrado." });
+      }
+
+      metodoPagamento.numero_cartao = numero_cartao;
+      metodoPagamento.data_validade = data_validade;
+      metodoPagamento.cvc = cvc;
+
+      await metodoPagamento.save();
+
+      return res.status(200).send({
+        mensagem: "Dados do cartão atualizados com sucesso.",
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar o cartão: ", error);
+      return res.status(500).send({
+        mensagem: "Erro ao atualizar o cartão",
+        error: error.message,
+      });
     }
   },
 

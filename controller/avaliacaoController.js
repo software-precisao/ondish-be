@@ -1,15 +1,16 @@
-const Avaliacao = require("../models/tb_avaliacao")
-const Restaurante = require("../models/tb_restaurante")
-const Usuario = require("../models/tb_usuarios")
+const Avaliacao = require("../models/tb_avaliacao");
+const Restaurante = require("../models/tb_restaurante");
+const Usuario = require("../models/tb_usuarios");
 
 // Criar uma nova avaliação
 const criarAvaliacao = async (req, res) => {
   try {
-    const { avaliacao, id_restaurante, id_user } = req.body;
+    const { avaliacao, id_restaurante, observacao, id_user } = req.body;
 
     const novaAvaliacao = await Avaliacao.create({
       avaliacao,
       id_restaurante,
+      observacao,
       id_user,
     });
 
@@ -19,7 +20,9 @@ const criarAvaliacao = async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao criar avaliação: ", error);
-    return res.status(500).send({ mensagem: "Erro ao criar avaliação", error: error.message });
+    return res
+      .status(500)
+      .send({ mensagem: "Erro ao criar avaliação", error: error.message });
   }
 };
 
@@ -45,7 +48,9 @@ const buscarTodasAvaliacoes = async (req, res) => {
     return res.status(200).send(avaliacoes);
   } catch (error) {
     console.error("Erro ao buscar avaliações: ", error);
-    return res.status(500).send({ mensagem: "Erro ao buscar avaliações", error: error.message });
+    return res
+      .status(500)
+      .send({ mensagem: "Erro ao buscar avaliações", error: error.message });
   }
 };
 
@@ -74,7 +79,9 @@ const buscarAvaliacaoPorId = async (req, res) => {
     return res.status(200).send(avaliacao);
   } catch (error) {
     console.error("Erro ao buscar avaliação por ID: ", error);
-    return res.status(500).send({ mensagem: "Erro ao buscar avaliação", error: error.message });
+    return res
+      .status(500)
+      .send({ mensagem: "Erro ao buscar avaliação", error: error.message });
   }
 };
 
@@ -102,7 +109,9 @@ const atualizarAvaliacao = async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao atualizar avaliação: ", error);
-    return res.status(500).send({ mensagem: "Erro ao atualizar avaliação", error: error.message });
+    return res
+      .status(500)
+      .send({ mensagem: "Erro ao atualizar avaliação", error: error.message });
   }
 };
 
@@ -118,10 +127,14 @@ const deletarAvaliacao = async (req, res) => {
       return res.status(404).send({ mensagem: "Avaliação não encontrada" });
     }
 
-    return res.status(200).send({ mensagem: "Avaliação deletada com sucesso!" });
+    return res
+      .status(200)
+      .send({ mensagem: "Avaliação deletada com sucesso!" });
   } catch (error) {
     console.error("Erro ao deletar avaliação: ", error);
-    return res.status(500).send({ mensagem: "Erro ao deletar avaliação", error: error.message });
+    return res
+      .status(500)
+      .send({ mensagem: "Erro ao deletar avaliação", error: error.message });
   }
 };
 

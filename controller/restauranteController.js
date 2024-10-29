@@ -3,14 +3,18 @@ const LatLong = require("../models/tb_lat_long");
 const Pratos = require("../models/tb_pratos");
 const Fotos = require("../models/tb_foto_pratos");
 const QRCode = require("qrcode");
-const Opcoes = require("../models/tb_opcoes");
-const Cozinha = require("../models/tb_cozinha_restaurante");
 const Qrcode = require("../models/tb_qrcode");
 
 const Usuario = require("../models/tb_usuarios");
 const Avaliacao = require("../models/tb_avaliacao");
 const Mesa = require("../models/tb_mesa");
 const locaisPreConfigurados = require("../constants/cities");
+const Opcoes = require("../models/tb_opcoes");
+const Bebida = require("../models/tb_bebidas");
+const FotoBebidas = require("../models/tb_foto_bebidas");
+const Sobremesa = require("../models/tb_sobremesas");
+const FotoSobremesas = require("../models/tb_foto_sobremesas");
+const Cozinha = require("../models/tb_cozinha");
 
 const restauranteController = {
   criarRestaurante: async (req, res) => {
@@ -105,6 +109,26 @@ const restauranteController = {
             ],
           },
           {
+            model: Bebida,
+            as: "bebidas",
+            include: [
+              {
+                model: FotoBebidas,
+                as: "fotos",
+              },
+            ],
+          },
+          {
+            model: Sobremesa,
+            as: "sobremesa",
+            include: [
+              {
+                model: FotoSobremesas,
+                as: "fotos",
+              },
+            ],
+          },
+          {
             model: Cozinha,
             as: "cozinha_restaurante",
           },
@@ -135,9 +159,6 @@ const restauranteController = {
           {
             model: Avaliacao,
             as: "avaliacoes",
-          },
-          {
-            model: Usuario,
           },
         ],
       });

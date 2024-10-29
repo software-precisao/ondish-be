@@ -14,7 +14,7 @@ const Bebida = require("../models/tb_bebidas");
 const FotoBebidas = require("../models/tb_foto_bebidas");
 const Sobremesa = require("../models/tb_sobremesas");
 const FotoSobremesas = require("../models/tb_foto_sobremesas");
-const Cozinha = require("../models/tb_cozinha");
+const Cozinha = require("../models/tb_cozinha_restaurante");
 
 const restauranteController = {
   criarRestaurante: async (req, res) => {

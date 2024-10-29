@@ -16,6 +16,10 @@ const Avaliacao = conn.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    observacao: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     id_restaurante: {
       type: DataTypes.INTEGER,
       allowNull: false,

@@ -137,6 +137,11 @@ const restauranteController = {
             as: "avaliacoes",
           },
         ],
+        include: [
+          {
+            model: Usuario,
+          },
+        ],
       });
 
       return res.status(200).send(restaurantes);

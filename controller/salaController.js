@@ -18,7 +18,7 @@ const verificaAnfitriao = async (req, res) => {
     const sala = await Sala.findOne({
       where: {
         id_mesa: id_mesa,
-        status_anfitriao: 1
+        status_anfitriao: 1,
       },
     });
 
@@ -26,8 +26,8 @@ const verificaAnfitriao = async (req, res) => {
     if (sala) {
       // Já tem um anfitrião, então retorna a mensagem
       return res.status(200).json({
-        status: 'convidado',
-        mensagem: 'Já tem um anfitrião na mesa, entre como convidado.',
+        status: "convidado",
+        mensagem: "Já tem um anfitrião na mesa, entre como convidado.",
         id_sala: sala.id_sala,
         id_restaurante: sala.id_restaurante,
         sala: sala.nome_sala,
@@ -35,14 +35,14 @@ const verificaAnfitriao = async (req, res) => {
     } else {
       // Não encontrou sala com anfitrião, então a mesa está livre
       return res.status(200).json({
-        status: 'livre',
-        mensagem: 'Mesa Livre! Seja o anfitrião.'
+        status: "livre",
+        mensagem: "Mesa Livre! Seja o anfitrião.",
       });
     }
   } catch (error) {
-    console.error('error message',error.message);
-    console.error('error stack',error.stack);
-    return res.status(500).json({ error: 'Erro ao verificar anfitrião.' });
+    console.error("error message", error.message);
+    console.error("error stack", error.stack);
+    return res.status(500).json({ error: "Erro ao verificar anfitrião." });
   }
 };
 // Função para criar uma nova sala
@@ -80,8 +80,8 @@ const criarSala = async (req, res) => {
     await AtividadeSala.create({
       id_sala: novaSala.id_sala,
       id_restaurante: novaSala.id_restaurante,
-      descricao: 'Acabou de criar uma sala',
-      status: 1
+      descricao: "Acabou de criar uma sala",
+      status: 1,
     });
 
     // Adicionar os convidados
@@ -121,7 +121,7 @@ const criarSala = async (req, res) => {
           htmlContent = htmlContent
             .replace("{{nome}}", usuarioConvidado.nome)
             .replace("{{anfitriao}}", anfitriao.nome)
-            .replace("{{email}}", usuarioConvidado.email)
+            .replace("{{email}}", usuarioConvidado.email);
 
           const transporter = nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
@@ -144,7 +144,10 @@ const criarSala = async (req, res) => {
           };
 
           let infoConvite = await transporter.sendMail(mailOptions);
-          console.log("Mensagem enviada para o convidado: %s", infoConvite.messageId);
+          console.log(
+            "Mensagem enviada para o convidado: %s",
+            infoConvite.messageId
+          );
         })
       );
     }
@@ -190,10 +193,28 @@ const criarSala = async (req, res) => {
   }
 };
 
+const editarNomeSala = async (req, res) => {
+  const { id_sala } = req.params;
+  const { nome_sala } = req.body;
+
+  try {
+    const sala = await Sala.findByPk(id_sala);
+    if (!sala) {
+      return res.status(404).json({ mensagem: "Sala não encontrada." });
+    }
+
+    await sala.update({ nome_sala });
+    res
+      .status(200)
+      .json({ mensagem: "Nome da sala atualizado com sucesso.", sala });
+  } catch (error) {
+    console.error("Erro ao atualizar o nome da sala:", error);
+    res.status(500).json({ mensagem: "Erro ao atualizar o nome da sala." });
+  }
+};
+
 const criarSalaWithoutConvidados = async (req, res) => {
-
-  try{
-
+  try {
     const {
       nome_sala,
       id_restaurante,
@@ -214,9 +235,9 @@ const criarSalaWithoutConvidados = async (req, res) => {
 
     const findTable = await Mesa.findOne({
       where: {
-        id_mesa: id_mesa
-      }
-    })
+        id_mesa: id_mesa,
+      },
+    });
 
     const novaSala = await Sala.create({
       nome_sala,
@@ -225,14 +246,14 @@ const criarSalaWithoutConvidados = async (req, res) => {
       id_mesa,
       id_usuario_anfitriao,
       status_anfitriao,
-      status: "aberta"
+      status: "aberta",
     });
 
     await AtividadeSala.create({
       id_sala: novaSala.id_sala,
       id_restaurante: novaSala.id_restaurante,
-      descricao: 'Acabou de criar uma sala',
-      status: 1
+      descricao: "Acabou de criar uma sala",
+      status: 1,
     });
 
     const htmlFilePath = path.join(__dirname, "../template/sala/sala.html");
@@ -256,7 +277,6 @@ const criarSalaWithoutConvidados = async (req, res) => {
       },
     });
 
-    
     let mailOptions = {
       from: `"Equipa Ondish Foods" ${process.env.EMAIL_FROM}`,
       to: anfitriao.email,
@@ -272,17 +292,11 @@ const criarSalaWithoutConvidados = async (req, res) => {
       mensagem: "Sala criada com sucesso!",
       sala: novaSala,
     });
-
-
-    
-
-  }
-  catch(error){
+  } catch (error) {
     console.error("Erro ao criar sala:", error);
     res.status(400).json({ error: error.message, success: false });
   }
-
-}
+};
 
 // Função para criar um convidado
 const convidado = async (req, res) => {
@@ -292,11 +306,10 @@ const convidado = async (req, res) => {
     const sala = await Sala.findOne({
       where: {
         id_mesa: id_mesa,
-        status_anfitriao: 1
-      }
+        status_anfitriao: 1,
+      },
     });
 
-    
     if (sala) {
       // Criar o convidado associado à sala
       const convidadoQr = await SalaConvidado.create({
@@ -305,17 +318,19 @@ const convidado = async (req, res) => {
         status_convidado: 0,
       });
       return res.status(200).json({
-        mensagem: 'Convidado criado com sucesso!',
-        convidado: convidadoQr
+        mensagem: "Convidado criado com sucesso!",
+        convidado: convidadoQr,
       });
     } else {
       return res.status(404).json({
-        mensagem: 'Nenhuma sala com anfitrião encontrada para esta mesa.'
+        mensagem: "Nenhuma sala com anfitrião encontrada para esta mesa.",
       });
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Erro ao procurar sala ou criar convidado.' });
+    return res
+      .status(500)
+      .json({ error: "Erro ao procurar sala ou criar convidado." });
   }
 };
 // Função para listar todas as salas
@@ -401,7 +416,7 @@ const atualizarStatusConvite = async (req, res) => {
       return res.status(404).json({ mensagem: "Convite não encontrado." });
     }
 
-    convite.status_convidado = status_convidado === "Aceito"? 1 : 0;
+    convite.status_convidado = status_convidado === "Aceito" ? 1 : 0;
     await convite.save();
 
     if (req.body.status === 1) {
@@ -497,7 +512,7 @@ const entrarSala = async (req, res) => {
 
     if (!usuario) {
       return res.status(404).json({ mensagem: "Usuário não encontrado." });
-    } 
+    }
 
     const convidado = await SalaConvidado.create({
       id_sala: sala.id_sala,
@@ -512,8 +527,8 @@ const entrarSala = async (req, res) => {
     await AtividadeSala.create({
       id_sala: sala.id_sala,
       id_restaurante: sala.id_restaurante,
-      descricao: 'Acabou de entrar na sala.',
-      status: 1
+      descricao: "Acabou de entrar na sala.",
+      status: 1,
     });
 
     res.status(200).json({
@@ -521,14 +536,11 @@ const entrarSala = async (req, res) => {
       mensagem: "Você entrou na sala com sucesso!",
       convidado,
     });
-
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Erro ao entrar na sala:", error);
     res.status(400).json({ error: error.message, success: false });
   }
-
-}
+};
 // Função para obter detalhes de uma sala específica
 const obterSala = async (req, res) => {
   const { id } = req.params;
@@ -563,8 +575,8 @@ const deletarSala = async (req, res) => {
     await AtividadeSala.create({
       id_sala: sala.id_sala,
       id_restaurante: sala.id_restaurante,
-      descricao: 'Convivio terminado.',
-      status: 1
+      descricao: "Convivio terminado.",
+      status: 1,
     });
 
     res
@@ -609,7 +621,7 @@ const criarSalaSemConvidado = async (req, res) => {
       id_mesa,
       id_usuario_anfitriao,
       status_anfitriao,
-      status: "aberta", 
+      status: "aberta",
     });
 
     await AtividadeSala.create({
@@ -624,10 +636,11 @@ const criarSalaSemConvidado = async (req, res) => {
       mensagem: "Sala criada com sucesso!",
       sala: novaSala,
     });
-
   } catch (error) {
     console.error("Erro ao criar sala:", error);
-    res.status(500).json({ mensagem: "Erro ao criar sala.", error: error.message });
+    res
+      .status(500)
+      .json({ mensagem: "Erro ao criar sala.", error: error.message });
   }
 };
 
@@ -642,5 +655,6 @@ module.exports = {
   deletarSala,
   criarSalaWithoutConvidados,
   entrarSala,
-  criarSalaSemConvidado
+  criarSalaSemConvidado,
+  editarNomeSala,
 };

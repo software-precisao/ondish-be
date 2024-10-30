@@ -88,10 +88,10 @@ const rotaAtividadePedido = require("./routes/atividadePedido");
 const rotaSobremesa = require("./routes/sobremesa");
 const rotaStatusMesa = require("./routes/statusMesa");
 const rotaLogs = require("./routes/logs");
-const rotaBoasVindas = require("./routes/boasVindas")
-const rotaLatLong = require("./routes/lat_long")
-const rotaCartao = require("./routes/cartaoPagamento")
-
+const rotaBoasVindas = require("./routes/boasVindas");
+const rotaLatLong = require("./routes/lat_long");
+const rotaCartao = require("./routes/cartaoPagamento");
+const rotaInfo = require("./routes/info");
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -162,10 +162,10 @@ app.use("/atividade-pedido", rotaAtividadePedido);
 app.use("/sobremesa", rotaSobremesa);
 app.use("/status-mesa", rotaStatusMesa);
 app.use("/logs", rotaLogs);
-app.use("/boas-vindas", rotaBoasVindas)
-app.use("/lat", rotaLatLong)
-app.use("/cartao", rotaCartao)
-
+app.use("/boas-vindas", rotaBoasVindas);
+app.use("/lat", rotaLatLong);
+app.use("/cartao", rotaCartao);
+app.use("/info", rotaInfo);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 

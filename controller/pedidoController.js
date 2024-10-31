@@ -11,6 +11,10 @@ const Usuario = require("../models/tb_usuarios");
 const AtividadePedido = require("../models/tb_atividade_pedido");
 const Sobremesa = require("../models/tb_sobremesas");
 const logPedido = require("./logsPedidoController");
+const FotoPratos = require("../models/tb_foto_pratos");
+const CozinhaRestaurante = require("../models/tb_cozinha_restaurante");
+const FotoBebidas = require("../models/tb_foto_bebidas");
+const FotoSobremesas = require("../models/tb_foto_sobremesas");
 const { Op } = require("sequelize");
 
 const gerarNumeroPedido = () => {
@@ -28,10 +32,30 @@ const obterTodosPedidos = async (req, res) => {
             {
               model: Pratos,
               as: "prato",
+              include: [
+                {
+                  model: Opcoes,
+                  as: "opcoes",
+                },
+                {
+                  model: FotoPratos,
+                  as: "fotos",
+                },
+                {
+                  model: CozinhaRestaurante,
+                  as: "cozinha",
+                },
+              ],
             },
             {
               model: Bebida,
               as: "bebida",
+              include: [
+                {
+                  model: FotoBebidas,
+                  as: "fotos",
+                },
+              ],
             },
             {
               model: Opcoes,
@@ -40,6 +64,12 @@ const obterTodosPedidos = async (req, res) => {
             {
               model: Sobremesa,
               as: "sobremesa",
+              include: [
+                {
+                  model: FotoSobremesas,
+                  as: "fotos",
+                },
+              ],
             },
           ],
         },

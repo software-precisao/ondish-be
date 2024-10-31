@@ -106,6 +106,10 @@ const restauranteController = {
                 model: Fotos,
                 as: "fotos",
               },
+              {
+                model: Cozinha,
+                as: "cozinha",
+              },
             ],
           },
           {
@@ -135,11 +139,11 @@ const restauranteController = {
           {
             model: Avaliacao,
             as: "avaliacoes",
-          },
-        ],
-        include: [
-          {
-            model: Usuario,
+            include: [
+              {
+                model: Usuario,
+              },
+            ],
           },
         ],
       });

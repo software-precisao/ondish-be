@@ -76,6 +76,12 @@ const obterTodosPedidos = async (req, res) => {
         {
           model: Sala,
           as: "sala",
+          include: [
+            {
+              model: Usuario,
+              as: "anfitriao",
+            },
+          ],
         },
         {
           model: Usuario,

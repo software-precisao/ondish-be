@@ -21,12 +21,10 @@ const Usuario = conn.define("tb_usuario", {
   numero_telefone: {
     type: DataTypes.STRING,
     allowNull: true,
-    unique: true,
   },
   email: {
     type: DataTypes.STRING,
     allowNull: true,
-    unique: true,
   },
   senha: {
     type: DataTypes.STRING,

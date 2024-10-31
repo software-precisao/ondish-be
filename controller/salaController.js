@@ -10,42 +10,33 @@ const Mesa = require("../models/tb_mesa");
 const fs = require("fs").promises;
 require("dotenv").config();
 
-
 const getSalasPorUsuario = async (req, res) => {
   const { id_user } = req.params;
 
   try {
-    const salasComoAnfitriao = await Sala.findAll({
-      where: { id_usuario_anfitriao: id_user },
-    });
-
-    const salasComoConvidado = await SalaConvidado.findAll({
+    const convites = await SalaConvidado.findAll({
       where: { id_usuario_convidado: id_user },
       include: [
         {
           model: Sala,
-          as: "salas", 
-          attributes: ["id_sala", "nome_sala", "id_restaurante", "id_mesa"],
+          as: "sala",
         },
       ],
     });
-    
 
-    const todasSalas = [
-      ...salasComoAnfitriao,
-      ...salasComoConvidado.map((convite) => convite.sala),
-    ];
+    const listaConvites = convites.map((convite) => convite.toJSON());
+    const listaSalas = convites.map((convite) => convite.sala).filter(Boolean);
 
     res.status(200).json({
-      mensagem: `Salas associadas ao usuário ${id_user} obtidas com sucesso.`,
-      salas: todasSalas,
+      mensagem: `Dados para o usuário ${id_user} obtidos com sucesso.`,
+      convites: listaConvites,
+      salas: listaSalas,
     });
   } catch (error) {
-    console.error("Erro ao obter salas do usuário:", error);
-    res.status(500).json({ mensagem: "Erro ao obter salas do usuário." });
+    console.error("Erro ao obter dados do usuário:", error);
+    res.status(500).json({ mensagem: "Erro ao obter dados do usuário." });
   }
 };
-
 
 SalaConvidado.belongsTo(Sala, {
   foreignKey: "id_sala",
@@ -702,5 +693,4 @@ module.exports = {
   criarSalaSemConvidado,
   editarNomeSala,
   getSalasPorUsuario,
-
 };

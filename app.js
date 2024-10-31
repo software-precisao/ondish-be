@@ -45,7 +45,7 @@ Pratos.hasMany(Fotos, {
 });
 
 Bebidas.hasMany(FotosBebidas, {
-  foreignKey: "id_bebidas",
+  foreignKey: "id_bebida",
   as: "fotos",
 });
 

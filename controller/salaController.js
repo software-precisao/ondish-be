@@ -10,6 +10,50 @@ const Mesa = require("../models/tb_mesa");
 const fs = require("fs").promises;
 require("dotenv").config();
 
+
+const getSalasPorUsuario = async (req, res) => {
+  const { id_user } = req.params;
+
+  try {
+    const salasComoAnfitriao = await Sala.findAll({
+      where: { id_usuario_anfitriao: id_user },
+    });
+
+    const salasComoConvidado = await SalaConvidado.findAll({
+      where: { id_usuario_convidado: id_user },
+      include: [
+        {
+          model: Sala,
+          as: "salas", 
+          attributes: ["id_sala", "nome_sala", "id_restaurante", "id_mesa"],
+        },
+      ],
+    });
+    
+
+    const todasSalas = [
+      ...salasComoAnfitriao,
+      ...salasComoConvidado.map((convite) => convite.sala),
+    ];
+
+    res.status(200).json({
+      mensagem: `Salas associadas ao usuário ${id_user} obtidas com sucesso.`,
+      salas: todasSalas,
+    });
+  } catch (error) {
+    console.error("Erro ao obter salas do usuário:", error);
+    res.status(500).json({ mensagem: "Erro ao obter salas do usuário." });
+  }
+};
+
+
+SalaConvidado.belongsTo(Sala, {
+  foreignKey: "id_sala",
+  as: "sala",
+});
+
+module.exports = SalaConvidado;
+
 // Verifica se o usuário é um anfitrião
 const verificaAnfitriao = async (req, res) => {
   try {
@@ -657,4 +701,6 @@ module.exports = {
   entrarSala,
   criarSalaSemConvidado,
   editarNomeSala,
+  getSalasPorUsuario,
+
 };

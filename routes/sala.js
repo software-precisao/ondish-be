@@ -14,5 +14,6 @@ router.get('/:id', salaController.obterSala);
 router.delete("/:id", salaController.deletarSala);
 router.post('/criarSalaSemConvidado', salaController.criarSalaSemConvidado);
 router.put("/editar-nome-sala/:id_sala", salaController.editarNomeSala);
+router.get("/usuario/:id_user", salaController.getSalasPorUsuario);
 
 module.exports = router;

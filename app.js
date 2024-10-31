@@ -18,6 +18,9 @@ const FotosBebidas = require("./models/tb_foto_bebidas");
 const { swaggerUi, specs } = require("./swaggerConfig");
 const Sobremesa = require("./models/tb_sobremesas");
 const FotoSobremesas = require("./models/tb_foto_sobremesas");
+const Sala = require("./models/tb_sala");
+const SalaConvidado = require("./models/tb_sala_convidado");
+
 
 Restaurante.hasMany(Pratos, {
   foreignKey: "id_restaurante",
@@ -68,6 +71,17 @@ Pratos.hasMany(Cozinha, {
   foreignKey: "id_cozinha_restaurante",
   as: "cozinha",
 });
+
+Sala.hasMany(SalaConvidado, {
+  foreignKey: "id_sala",
+  as: "salaConvidados",
+});
+
+SalaConvidado.belongsTo(Sala, {
+  foreignKey: "id_sala",
+  as: "salas",
+});
+
 
 // Rotas
 const rotaLogin = require("./routes/login");

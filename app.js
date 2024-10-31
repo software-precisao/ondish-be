@@ -64,6 +64,11 @@ Restaurante.hasMany(Sobremesa, {
   as: "sobremesa",
 });
 
+Pratos.hasMany(Cozinha, {
+  foreignKey: "id_cozinha_restaurante",
+  as: "cozinha",
+});
+
 // Rotas
 const rotaLogin = require("./routes/login");
 const rotaUser = require("./routes/usuario");

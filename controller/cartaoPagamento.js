@@ -58,7 +58,7 @@ const metodoPagamentoController = {
   getMetodoPagamentoByUserId: async (req, res) => {
     try {
       const { id_user } = req.params;
-      const metodoPagamento = await MetodoPagamento.findOne({
+      const metodoPagamento = await MetodoPagamento.findAll({
         where: { id_user },
       });
       if (!metodoPagamento) {

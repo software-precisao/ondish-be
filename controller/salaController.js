@@ -10,6 +10,26 @@ const Mesa = require("../models/tb_mesa");
 const fs = require("fs").promises;
 require("dotenv").config();
 
+const editarStatusSala = async (req, res) => {
+  const { id_sala } = req.params;
+  const { status } = req.body;
+
+  try {
+    const sala = await Sala.findByPk(id_sala);
+    if (!sala) {
+      return res.status(404).json({ mensagem: "Sala não encontrada." });
+    }
+
+    await sala.update({ status });
+    res
+      .status(200)
+      .json({ mensagem: "Status da sala atualizado com sucesso.", sala });
+  } catch (error) {
+    console.error("Erro ao atualizar o nome da sala:", error);
+    res.status(500).json({ mensagem: "Erro ao atualizar o nome da sala." });
+  }
+};
+
 const getSalasPorUsuario = async (req, res) => {
   const { id_user } = req.params;
 
@@ -24,8 +44,17 @@ const getSalasPorUsuario = async (req, res) => {
       ],
     });
 
+    const salasAnfitriao = await Sala.findAll({
+      where: { id_usuario_anfitriao: id_user },
+    });
+
     const listaConvites = convites.map((convite) => convite.toJSON());
-    const listaSalas = convites.map((convite) => convite.sala).filter(Boolean);
+
+    const listaSalasConvites = listaConvites
+      .map((convite) => convite.sala)
+      .filter(Boolean);
+
+    const listaSalas = [...listaSalasConvites, ...salasAnfitriao];
 
     res.status(200).json({
       mensagem: `Dados para o usuário ${id_user} obtidos com sucesso.`,
@@ -38,12 +67,6 @@ const getSalasPorUsuario = async (req, res) => {
   }
 };
 
-SalaConvidado.belongsTo(Sala, {
-  foreignKey: "id_sala",
-  as: "sala",
-});
-
-module.exports = SalaConvidado;
 
 // Verifica se o usuário é um anfitrião
 const verificaAnfitriao = async (req, res) => {
@@ -693,4 +716,5 @@ module.exports = {
   criarSalaSemConvidado,
   editarNomeSala,
   getSalasPorUsuario,
+  editarStatusSala
 };

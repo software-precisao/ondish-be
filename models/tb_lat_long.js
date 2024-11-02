@@ -45,6 +45,10 @@ const LatLong = conn.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    descricao: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   { freezeTableName: true }
 );

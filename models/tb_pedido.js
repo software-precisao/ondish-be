@@ -17,7 +17,13 @@ const Pedido = conn.define(
     },
     id_usuario: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
+      references: {
+        model: Usuario,
+        key: "id_user",
+      },
+      onDelete: "SET NULL",
+      onUpdate: "CASCADE",
     },
     id_restaurante: {
       type: DataTypes.INTEGER,
@@ -50,7 +56,7 @@ const Pedido = conn.define(
 Pedido.belongsTo(Usuario, {
   foreignKey: "id_usuario",
   as: "usuario",
-  onDelete: "CASCADE",
+  onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
 
@@ -78,9 +84,8 @@ Pedido.belongsTo(Mesa, {
 Pedido.hasMany(ItensPedido, {
   foreignKey: "id_pedido",
   as: "itens_pedido",
-  onDelete: "CASCADE",
+  oonDelete: "RESTRICT",
   onUpdate: "CASCADE",
 });
-
 
 module.exports = Pedido;

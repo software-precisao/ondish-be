@@ -112,6 +112,7 @@ const rotaLatLong = require("./routes/lat_long");
 const rotaCartao = require("./routes/cartaoPagamento");
 const rotaInfo = require("./routes/info");
 const rotaGarcom = require("./routes/garcom");
+const rotaPreferenciaUser = require("./routes/preferenciasUser")
 
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -188,6 +189,7 @@ app.use("/lat", rotaLatLong);
 app.use("/cartao", rotaCartao);
 app.use("/info", rotaInfo);
 app.use("/chamar-garcom", rotaGarcom);
+app.use("/preferencias-usuario", rotaPreferenciaUser)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 

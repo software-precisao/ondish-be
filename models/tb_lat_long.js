@@ -35,15 +35,15 @@ const LatLong = conn.define(
     },
     andar: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     numero_porta: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     localizacao: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
   },
   { freezeTableName: true }

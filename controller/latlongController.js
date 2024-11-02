@@ -34,9 +34,9 @@ const latLongController = {
   atualizarCoordenada: async (req, res) => {
     try {
       const { id } = req.params;
-      const { latitude, longitude, cep, endereco } = req.body;
+      const { latitude, longitude, cep, endereco, andar, numero_porta, localizacao } = req.body;
       const atualizado = await LatLong.update(
-        { latitude, longitude, cep, endereco },
+        { latitude, longitude, cep, endereco, andar, numero_porta, localizacao },
         { where: { id_lat_long: id } }
       );
       if (atualizado[0]) {
@@ -52,13 +52,16 @@ const latLongController = {
 
   adicionarCoordenadas: async (req, res) => {
     try {
-      const { id_user, cep, endereco, latitude, longitude } = req.body;
+      const { id_user, cep, endereco, latitude, longitude, andar, numero_porta, localizacao } = req.body;
       const novaCoordenada = await LatLong.create({
         id_user,
         cep,
         endereco,
         latitude,
-        longitude
+        longitude,
+        andar,
+        numero_porta,
+        localizacao
       });
       return res.status(201).json(novaCoordenada);
     } catch (error) {

@@ -40,6 +40,8 @@ ChamadoGarcom.belongsTo(Usuario, {
   foreignKey: "id_user",
   as: "usuario",
   foreignKeyConstraint: true,
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 ChamadoGarcom.belongsTo(Restaurante, {

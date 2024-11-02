@@ -225,15 +225,15 @@ const atualizarSenhaUsuario = async (req, res, next) => {
 
 const recuperarSenha = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const { numero_telefone } = req.body;
 
     const usuarioExistente = await Usuario.findOne({
-      where: { email },
+      where: { numero_telefone },
     });
 
     if (!usuarioExistente) {
       return res.status(404).send({
-        mensagem: "Email não encontrado!",
+        mensagem: "Número de telefone não encontrado!",
       });
     }
 

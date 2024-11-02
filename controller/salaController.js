@@ -39,7 +39,7 @@ const getSalasPorUsuario = async (req, res) => {
       include: [
         {
           model: Sala,
-          as: "sala",
+          as: "salas",
         },
       ],
     });

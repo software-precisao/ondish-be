@@ -1,6 +1,29 @@
 const PreferenciasUsuario = require("../models/tb_preferencias_user");
 
 const PreferenciasUsuarioController = {
+  async obterPreferencias(req, res) {
+    const { id_user } = req.params;
+
+    try {
+      const preferencias = await PreferenciasUsuario.findOne({
+        where: { id_user },
+      });
+
+      if (!preferencias) {
+        return res
+          .status(404)
+          .json({ message: "Preferências não encontradas para o usuário." });
+      }
+
+      return res.status(200).json(preferencias);
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ message: "Erro ao buscar preferências do usuário." });
+    }
+  },
+
   async atualizarPreferencias(req, res) {
     const { id_user } = req.params;
     const {

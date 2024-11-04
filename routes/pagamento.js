@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const paymentController = require('../controller/paymentController');
 
-router.post('/pagamento-card', paymentController.createPaymentIntent);
+router.post('/mbway', paymentController.createMBWayPayment);
+router.post('/multibanco', paymentController.createMultibancoReference);
 
 
 module.exports = router;

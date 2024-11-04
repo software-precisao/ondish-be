@@ -108,7 +108,7 @@ const restauranteController = {
               },
               {
                 model: Cozinha,
-                as: "cozinha",
+                as: "cozinha_restaurante",
               },
             ],
           },

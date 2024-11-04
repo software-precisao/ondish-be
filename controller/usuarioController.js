@@ -5,6 +5,8 @@ const Code = require("../models/tb_code");
 const Token = require("../models/tb_token");
 const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
+const PreferenciasUsuario = require("../models/tb_preferencias_user");
+
 
 const nodemailer = require("nodemailer");
 const path = require("path");
@@ -129,6 +131,21 @@ const concluirRegistro = async (req, res) => {
       },
       { where: { id_user } }
     );
+
+    const preferenciasExistentes = await PreferenciasUsuario.findOne({
+      where: { id_user },
+    });
+
+    if (!preferenciasExistentes) {
+      await PreferenciasUsuario.create({
+        id_user,
+        notificacoes_pedido: true,
+        notificacoes_dicas_e_promocao: false,
+        email_dicas_e_promocao: true,
+        notificacoes_ofertas_parceiros: false,
+        email_ofertas_parceiros: true,
+      });
+    }
 
     return res
       .status(200)

@@ -7,20 +7,19 @@ require("dotenv").config();
 
 const app = express();
 
-const Restaurante = require("./models/tb_restaurante");
-const Pratos = require("./models/tb_pratos");
-const Opcoes = require("./models/tb_opcoes");
-const Avaliacao = require("./models/tb_avaliacao");
-const Cozinha = require("./models/tb_cozinha_restaurante");
-const Fotos = require("./models/tb_foto_pratos");
-const Bebidas = require("./models/tb_bebidas");
-const FotosBebidas = require("./models/tb_foto_bebidas");
+const Restaurante = require("./src/models/tb_restaurante");
+const Pratos = require("./src/models/tb_pratos");
+const Opcoes = require("./src/models/tb_opcoes");
+const Avaliacao = require("./src/models/tb_avaliacao");
+const Cozinha = require("./src/models/tb_cozinha_restaurante");
+const Fotos = require("./src/models/tb_foto_pratos");
+const Bebidas = require("./src/models/tb_bebidas");
+const FotosBebidas = require("./src/models/tb_foto_bebidas");
 const { swaggerUi, specs } = require("./swaggerConfig");
-const Sobremesa = require("./models/tb_sobremesas");
-const FotoSobremesas = require("./models/tb_foto_sobremesas");
-const Sala = require("./models/tb_sala");
-const SalaConvidado = require("./models/tb_sala_convidado");
-
+const Sobremesa = require("./src/models/tb_sobremesas");
+const FotoSobremesas = require("./src/models/tb_foto_sobremesas");
+const Sala = require("./src/models/tb_sala");
+const SalaConvidado = require("./src/models/tb_sala_convidado");
 
 Restaurante.hasMany(Pratos, {
   foreignKey: "id_restaurante",
@@ -82,37 +81,36 @@ SalaConvidado.belongsTo(Sala, {
   as: "salas",
 });
 
-
 // Rotas
-const rotaLogin = require("./routes/login");
-const rotaUser = require("./routes/usuario");
-const rotaNivel = require("./routes/nivel");
-const rotaStatus = require("./routes/status");
-const rotaEmail = require("./routes/email");
-const rotaCozinha = require("./routes/cozinha");
-const rotaRestaurante = require("./routes/restaurante");
-const rotaCoordenadas = require("./routes/coordenadas");
-const rotaToken = require("./routes/token");
-const rotaPratos = require("./routes/pratos");
-const rotaBebidas = require("./routes/bebidas");
-const rotaAvaliacao = require("./routes/avaliacao");
-const rotaCozinhaRestaurante = require("./routes/cozinha_restaurante");
-const rotaPedido = require("./routes/pedido");
-const rotaSala = require("./routes/sala");
-const rotaMesa = require("./routes/mesa");
-const rotaFuncionarios = require("./routes/funcionarios");
-const rotaPagamento = require("./routes/pagamento");
-const rotaAtividadeSala = require("./routes/atividadeSala");
-const rotaAtividadePedido = require("./routes/atividadePedido");
-const rotaSobremesa = require("./routes/sobremesa");
-const rotaStatusMesa = require("./routes/statusMesa");
-const rotaLogs = require("./routes/logs");
-const rotaBoasVindas = require("./routes/boasVindas");
-const rotaLatLong = require("./routes/lat_long");
-const rotaCartao = require("./routes/cartaoPagamento");
-const rotaInfo = require("./routes/info");
-const rotaGarcom = require("./routes/garcom");
-const rotaPreferenciaUser = require("./routes/preferenciasUser")
+const rotaLogin = require("./src/routes/login");
+const rotaUser = require("./src/routes/usuario");
+const rotaNivel = require("./src/routes/nivel");
+const rotaStatus = require("./src/routes/status");
+const rotaEmail = require("./src/routes/email");
+const rotaCozinha = require("./src/routes/cozinha");
+const rotaRestaurante = require("./src/routes/restaurante");
+const rotaCoordenadas = require("./src/routes/coordenadas");
+const rotaToken = require("./src/routes/token");
+const rotaPratos = require("./src/routes/pratos");
+const rotaBebidas = require("./src/routes/bebidas");
+const rotaAvaliacao = require("./src/routes/avaliacao");
+const rotaCozinhaRestaurante = require("./src/routes/cozinha_restaurante");
+const rotaPedido = require("./src/routes/pedido");
+const rotaSala = require("./src/routes/sala");
+const rotaMesa = require("./src/routes/mesa");
+const rotaFuncionarios = require("./src/routes/funcionarios");
+const rotaPagamento = require("./src/routes/pagamento");
+const rotaAtividadeSala = require("./src/routes/atividadeSala");
+const rotaAtividadePedido = require("./src/routes/atividadePedido");
+const rotaSobremesa = require("./src/routes/sobremesa");
+const rotaStatusMesa = require("./src/routes/statusMesa");
+const rotaLogs = require("./src/routes/logs");
+const rotaBoasVindas = require("./src/routes/boasVindas");
+const rotaLatLong = require("./src/routes/lat_long");
+const rotaCartao = require("./src/routes/cartaoPagamento");
+const rotaInfo = require("./src/routes/info");
+const rotaGarcom = require("./src/routes/garcom");
+const rotaPreferenciaUser = require("./src/routes/preferenciasUser");
 
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -189,7 +187,7 @@ app.use("/lat", rotaLatLong);
 app.use("/cartao", rotaCartao);
 app.use("/info", rotaInfo);
 app.use("/chamar-garcom", rotaGarcom);
-app.use("/preferencias-usuario", rotaPreferenciaUser)
+app.use("/preferencias-usuario", rotaPreferenciaUser);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 

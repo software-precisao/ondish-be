@@ -4,5 +4,6 @@ const PreferenciasUsuarioController = require("../controller/preferenciasUserCon
 const router = express.Router();
 
 router.put("/editar/:id_user", PreferenciasUsuarioController.atualizarPreferencias);
+router.get("/:id_user", PreferenciasUsuarioController.obterPreferencias);
 
 module.exports = router;

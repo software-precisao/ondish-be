@@ -1,0 +1,29 @@
+version: '3.1'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-ondishfoods
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password  # Senha do usuário root
+      MYSQL_DATABASE: db_ondishfoods         # Nome do banco de dados padrão
+      MYSQL_USER: user_ondish          # Nome do usuário que você vai usar
+      MYSQL_PASSWORD: "@ondishfoods"       # Senha do usuário
+    ports:
+      - "3306:3306"                       # Porta do MySQL (host:container)
+    volumes:
+      - mysql_data:/var/lib/mysql         # Volume para persistir os dados
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-ondishfood
+    environment:
+      PMA_HOST: mysql                     # Nome do serviço MySQL (deve ser igual ao nome do serviço acima)
+      PMA_PORT: 3306
+      MYSQL_USER: user_ondish         # Usuário para acessar o banco no phpMyAdmin
+      MYSQL_PASSWORD: "@ondishfoods"       # Senha para acessar o banco no phpMyAdmin
+    ports:
+      - "9000:80"                         # Porta do phpMyAdmin (host:container)
+
+volumes:
+  mysql_data:

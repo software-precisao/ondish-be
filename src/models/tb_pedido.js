@@ -1,7 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const conn = require("../../data/conn");
 
-
 const Usuario = require("./tb_usuarios");
 const Restaurante = require("./tb_restaurante");
 const Sala = require("./tb_sala");
@@ -50,6 +49,14 @@ const Pedido = conn.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    quantidade: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    pago: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
   },
   { freezeTableName: true }
 );
@@ -85,7 +92,7 @@ Pedido.belongsTo(Mesa, {
 Pedido.hasMany(ItensPedido, {
   foreignKey: "id_pedido",
   as: "itens_pedido",
-  oonDelete: "RESTRICT",
+  onDelete: "RESTRICT",
   onUpdate: "CASCADE",
 });
 

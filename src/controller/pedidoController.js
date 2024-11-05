@@ -155,6 +155,8 @@ const criarPedidoComItens = async (req, res) => {
       id_mesa,
       valor_total,
       numero_pedido,
+      quantidade: itens.reduce((acc, item) => acc + item.quantidade, 0),
+      pago: false,
     });
 
     for (const item of itens) {
@@ -356,9 +358,12 @@ const atualizarStatusPedido = async (req, res) => {
     }
 
     pedido.status = status;
+    if (status === "Pago") {
+      pedido.pago = true;
+    }
     await pedido.save();
 
-    if (status === "Pago" || "Cancelado") {
+    if (status === "Pago" || status === "Cancelado") {
       await Mesa.update(
         { id_status_mesa: 1 },
         { where: { id_mesa: pedido.id_mesa } }
@@ -373,14 +378,12 @@ const atualizarStatusPedido = async (req, res) => {
       pedidoAtualizado: {
         id_pedido: pedido.id_pedido,
         status: pedido.status,
+        pago: pedido.pago,
       },
     });
   } catch (error) {
     console.error("Erro ao atualizar status do pedido:", error);
-    return res.status(500).send({
-      mensagem: "Erro ao atualizar status do pedido",
-      error: error.message,
-    });
+    return res.status(500).send({ error: error.message });
   }
 };
 

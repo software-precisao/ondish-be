@@ -98,8 +98,7 @@ const registrarNumeroTelefone = async (req, res) => {
 const concluirRegistro = async (req, res) => {
   try {
     const { id_user } = req.params;
-    const { senha, pin_registro, nome, sobrenome, email, avatar, config } =
-      req.body;
+    const { senha, pin_registro, nome, sobrenome, email, avatar, config, token_notification } = req.body;
 
     const usuario = await Usuario.findOne({ where: { id_user } });
     if (!usuario) {
@@ -128,6 +127,7 @@ const concluirRegistro = async (req, res) => {
         senha: await bcrypt.hash(senha, 10),
         avatar,
         config,
+        token_notification: token_notification || usuario.token_notification, 
       },
       { where: { id_user } }
     );
@@ -333,7 +333,7 @@ const atualizarUsuario = async (req, res, next) => {
       return res.status(404).send({ message: "Usuário não encontrado" });
     }
 
-    const { nome, sobrenome, email, numero_telefone } = req.body;
+    const { nome, sobrenome, email, numero_telefone, token_notification } = req.body;
 
     if (email) {
       const emailExistente = await Usuario.findOne({
@@ -373,6 +373,7 @@ const atualizarUsuario = async (req, res, next) => {
       email,
       numero_telefone,
       avatar: req.body.avatar || usuario.avatar,
+      token_notification: token_notification || usuario.token_notification, 
     });
 
     res.status(200).send({

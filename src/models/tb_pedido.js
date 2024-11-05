@@ -57,6 +57,16 @@ const Pedido = conn.define(
       type: DataTypes.BOOLEAN,
       allowNull: true,
     },
+    usuario_pagante: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: Usuario,
+        key: "id_user",
+      },
+      onDelete: "SET NULL",
+      onUpdate: "CASCADE",
+    },
   },
   { freezeTableName: true }
 );
@@ -95,5 +105,13 @@ Pedido.hasMany(ItensPedido, {
   onDelete: "RESTRICT",
   onUpdate: "CASCADE",
 });
+
+Pedido.belongsTo(Usuario, {
+  foreignKey: "usuario_pagante",
+  as: "pagante",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+
 
 module.exports = Pedido;

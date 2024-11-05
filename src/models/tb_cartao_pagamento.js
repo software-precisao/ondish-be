@@ -30,6 +30,10 @@ const CartaoPagamento = conn.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    selected: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
   },
   {
     freezeTableName: true,

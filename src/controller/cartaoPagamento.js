@@ -176,6 +176,37 @@ const metodoPagamentoController = {
         .send({ mensagem: "Erro ao excluir método de pagamento." });
     }
   },
+
+  definirCartaoPredefinido: async (req, res) => {
+    try {
+      const { id_metodo_pagamento } = req.params;
+      const { id_user } = req.body;
+
+      const metodoPagamento = await MetodoPagamento.findByPk(
+        id_metodo_pagamento
+      );
+      if (!metodoPagamento) {
+        return res
+          .status(404)
+          .send({ mensagem: "Método de pagamento não encontrado." });
+      }
+
+      await MetodoPagamento.update({ selected: false }, { where: { id_user } });
+
+      await metodoPagamento.update({ selected: true });
+
+      return res.status(200).send({
+        mensagem: "Cartão definido como pré-definido com sucesso.",
+        id_metodo_pagamento,
+      });
+    } catch (error) {
+      console.error("Erro ao definir cartão como pré-definido: ", error);
+      return res.status(500).send({
+        mensagem: "Erro ao definir cartão como pré-definido.",
+        error: error.message,
+      });
+    }
+  },
 };
 
 module.exports = metodoPagamentoController;

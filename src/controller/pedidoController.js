@@ -21,6 +21,7 @@ const gerarNumeroPedido = () => {
   return Math.floor(Math.random() * 90000) + 10000;
 };
 
+
 const obterTodosPedidos = async (req, res) => {
   try {
     const pedidos = await Pedido.findAll({
@@ -85,7 +86,11 @@ const obterTodosPedidos = async (req, res) => {
         },
         {
           model: Usuario,
-          as: "usuario",
+          as: "usuario", 
+        },
+        {
+          model: Usuario,
+          as: "pagante", 
         },
         {
           model: Restaurante,
@@ -104,6 +109,7 @@ const obterTodosPedidos = async (req, res) => {
     return res.status(500).send({ error: error.message });
   }
 };
+
 
 const obterPedidosPorMesa = async (req, res) => {
   const { id_mesa } = req.params;
@@ -350,7 +356,7 @@ const obterPedidoRestaurante = async (req, res) => {
 
 const atualizarStatusPedido = async (req, res) => {
   try {
-    const { id_pedido, status } = req.body;
+    const { id_pedido, status, usuario_pagante } = req.body;
 
     const pedido = await Pedido.findByPk(id_pedido);
     if (!pedido) {
@@ -360,6 +366,7 @@ const atualizarStatusPedido = async (req, res) => {
     pedido.status = status;
     if (status === "Pago") {
       pedido.pago = true;
+      pedido.usuario_pagante = usuario_pagante;
     }
     await pedido.save();
 
@@ -379,6 +386,7 @@ const atualizarStatusPedido = async (req, res) => {
         id_pedido: pedido.id_pedido,
         status: pedido.status,
         pago: pedido.pago,
+        usuario_pagante: pedido.usuario_pagante,
       },
     });
   } catch (error) {

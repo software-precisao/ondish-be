@@ -16,8 +16,24 @@ const Avaliacao = conn.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    observacao: {
-      type: DataTypes.TEXT,
+    experiencia_geral: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    qualidade_comida: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    servico_cliente: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    ambiente: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    relacao_qualidade_preco: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     id_restaurante: {

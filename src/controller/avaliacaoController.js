@@ -2,16 +2,20 @@ const Avaliacao = require("../models/tb_avaliacao");
 const Restaurante = require("../models/tb_restaurante");
 const Usuario = require("../models/tb_usuarios");
 
-// Criar uma nova avaliação
 const criarAvaliacao = async (req, res) => {
   try {
-    const { avaliacao, id_restaurante, observacao, id_user } = req.body;
+    const { avaliacao, id_restaurante, observacao, id_user, experiencia_geral, qualidade_comida, servico_cliente, ambiente, relacao_qualidade_preco } = req.body;
 
     const novaAvaliacao = await Avaliacao.create({
       avaliacao,
       id_restaurante,
       observacao,
       id_user,
+      experiencia_geral,
+      qualidade_comida,
+      servico_cliente,
+      ambiente,
+      relacao_qualidade_preco
     });
 
     return res.status(201).send({
@@ -26,7 +30,6 @@ const criarAvaliacao = async (req, res) => {
   }
 };
 
-// Buscar todas as avaliações
 const buscarTodasAvaliacoes = async (req, res) => {
   try {
     const avaliacoes = await Avaliacao.findAll({
@@ -54,7 +57,6 @@ const buscarTodasAvaliacoes = async (req, res) => {
   }
 };
 
-// Buscar uma avaliação por ID
 const buscarAvaliacaoPorId = async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,7 +87,6 @@ const buscarAvaliacaoPorId = async (req, res) => {
   }
 };
 
-// Atualizar uma avaliação
 const atualizarAvaliacao = async (req, res) => {
   try {
     const { id } = req.params;

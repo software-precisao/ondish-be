@@ -1,6 +1,41 @@
 const axios = require("axios");
 const { authenticate, getAuthToken } = require("./authController");
 const eupagoConfig = require("../config/eupagoConfig");
+const Stripe = require("stripe");
+const dotenv = require("dotenv");
+
+dotenv.config();
+
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+exports.calculateOrderAmount = (items) => {
+  let total = 0;
+  items.forEach((item) => {
+    total += item.price * item.quantity;
+  });
+  return total * 100;
+};
+
+exports.createPaymentIntent = async (req, res) => {
+  const { items } = req.body;
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: calculateOrderAmount(items),
+      currency: "eur",
+      payment_method_types: ["card"],
+    });
+
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (error) {
+    console.error("Erro ao criar PaymentIntent:", error);
+    res
+      .status(500)
+      .send({ mensagem: "Erro ao criar PaymentIntent", error: error.message });
+  }
+};
 
 exports.createMBWayPayment = async (req, res) => {
   const { amount, phoneNumber, id } = req.body;

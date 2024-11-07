@@ -7,6 +7,7 @@ const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
 const PreferenciasUsuario = require("../models/tb_preferencias_user");
 const { sendPushNotification } = require("../utils/pushNotification");
+// const { sendSms } = require('../utils/smsToken') 
 
 const nodemailer = require("nodemailer");
 const path = require("path");
@@ -94,6 +95,53 @@ const registrarNumeroTelefone = async (req, res) => {
     return res.status(500).send({ error: error.message });
   }
 };
+
+//CÓDIGO COM O ENVIO DE SMS, TEM QUE CORRIGIR QUANDO CONSEGUIR AS CHAVES 
+// const registrarNumeroTelefone = async (req, res) => {
+//   try {
+//     const { numero_telefone, id_nivel, id_status } = req.body;
+
+//     const usuarioExistente = await Usuario.findOne({
+//       where: { numero_telefone },
+//     });
+//     if (usuarioExistente) {
+//       return res
+//         .status(400)
+//         .send({ mensagem: "Número de telefone já cadastrado." });
+//     }
+
+//     const smsResponse = await sendSms(numero_telefone, "Código de verificação");
+
+//     if (!smsResponse || !smsResponse.code) {
+//       return res
+//         .status(500)
+//         .send({ error: "Falha ao enviar SMS de verificação." });
+//     }
+
+//     const novoUsuario = await Usuario.create({
+//       numero_telefone,
+//       id_nivel: id_nivel || 3,
+//       id_status: id_status || 1,
+//     });
+
+//     await Code.create({
+//       type_code: 1,
+//       code: smsResponse.code,
+//       id_user: novoUsuario.id_user,
+//     });
+
+//     return res.status(201).send({
+//       mensagem:
+//         "Número de telefone registrado com sucesso. Verifique o SMS enviado para concluir o cadastro.",
+//       id_user: novoUsuario.id_user,
+//     });
+//   } catch (error) {
+//     console.error("Erro ao registrar número de telefone:", error.message);
+//     return res
+//       .status(500)
+//       .send({ error: "Erro interno ao registrar número de telefone." });
+//   }
+// };
 
 const concluirRegistro = async (req, res) => {
   try {

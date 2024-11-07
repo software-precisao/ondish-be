@@ -13,7 +13,7 @@ const Avaliacao = conn.define(
       primaryKey: true,
     },
     avaliacao: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       allowNull: true,
     },
     experiencia_geral: {

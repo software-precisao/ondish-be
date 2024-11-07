@@ -28,6 +28,10 @@ const Avaliacao = conn.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    observacao: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     ambiente: {
       type: DataTypes.INTEGER,
       allowNull: true,

@@ -6,7 +6,7 @@ const Token = require("../models/tb_token");
 const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
 const PreferenciasUsuario = require("../models/tb_preferencias_user");
-
+const { sendPushNotification } = require("../utils/pushNotification");
 
 const nodemailer = require("nodemailer");
 const path = require("path");
@@ -98,7 +98,16 @@ const registrarNumeroTelefone = async (req, res) => {
 const concluirRegistro = async (req, res) => {
   try {
     const { id_user } = req.params;
-    const { senha, pin_registro, nome, sobrenome, email, avatar, config, token_notification } = req.body;
+    const {
+      senha,
+      pin_registro,
+      nome,
+      sobrenome,
+      email,
+      avatar,
+      config,
+      token_notification,
+    } = req.body;
 
     const usuario = await Usuario.findOne({ where: { id_user } });
     if (!usuario) {
@@ -127,7 +136,7 @@ const concluirRegistro = async (req, res) => {
         senha: await bcrypt.hash(senha, 10),
         avatar,
         config,
-        token_notification: token_notification || usuario.token_notification, 
+        token_notification: token_notification || usuario.token_notification,
       },
       { where: { id_user } }
     );
@@ -153,6 +162,31 @@ const concluirRegistro = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).send({ error: error.message });
+  }
+};
+
+const enviarNotificacaoUsuario = async (req, res) => {
+  try {
+    const { id_user } = req.params;
+    const { title, body, image } = req.body;
+
+    const usuario = await Usuario.findOne({ where: { id_user } });
+    if (!usuario || !usuario.token_notification) {
+      return res
+        .status(404)
+        .json({ mensagem: "Usuário ou token de notificação não encontrado." });
+    }
+
+    await sendPushNotification(usuario.token_notification, title, body, image);
+
+    return res
+      .status(200)
+      .json({ mensagem: "Notificação enviada com sucesso." });
+  } catch (error) {
+    console.error("Erro ao enviar notificação:", error);
+    return res
+      .status(500)
+      .json({ mensagem: "Erro ao enviar notificação.", error: error.message });
   }
 };
 
@@ -333,7 +367,8 @@ const atualizarUsuario = async (req, res, next) => {
       return res.status(404).send({ message: "Usuário não encontrado" });
     }
 
-    const { nome, sobrenome, email, numero_telefone, token_notification } = req.body;
+    const { nome, sobrenome, email, numero_telefone, token_notification } =
+      req.body;
 
     if (email) {
       const emailExistente = await Usuario.findOne({
@@ -373,7 +408,7 @@ const atualizarUsuario = async (req, res, next) => {
       email,
       numero_telefone,
       avatar: req.body.avatar || usuario.avatar,
-      token_notification: token_notification || usuario.token_notification, 
+      token_notification: token_notification || usuario.token_notification,
     });
 
     res.status(200).send({
@@ -464,5 +499,6 @@ module.exports = {
   trocaSenhaporEmail,
   registrarNumeroTelefone,
   concluirRegistro,
-  enviarEmail
+  enviarEmail,
+  enviarNotificacaoUsuario,
 };

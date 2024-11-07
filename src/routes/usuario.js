@@ -260,6 +260,7 @@ router.put("/dados/:id_user", usuarioController.trocaSenha);
 router.post('/cadastrar', uploadFields, usuarioController.registrarNumeroTelefone);
 router.put('/concluir-cadastro/:id_user', uploadFields, usuarioController.concluirRegistro);
 
+router.post("/notificacao/:id_user", usuarioController.enviarNotificacaoUsuario);
 
 
 

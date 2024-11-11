@@ -1,172 +1,103 @@
 const axios = require("axios");
-const { authenticate, getAuthToken } = require("./authController");
-const eupagoConfig = require("../config/eupagoConfig");
 const Stripe = require("stripe");
 const dotenv = require("dotenv");
 
 dotenv.config();
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-exports.calculateOrderAmount = (items) => {
-  let total = 0;
-  items.forEach((item) => {
-    total += item.price * item.quantity;
-  });
-  return total * 100;
-};
-
-exports.createPaymentIntent = async (req, res) => {
-  const { items } = req.body;
-
+const createPaymentIntent = async (req, res) => {
   try {
+    const { amount } = req.body; 
+
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: calculateOrderAmount(items),
+      amount,
       currency: "eur",
-      payment_method_types: ["card"],
+      payment_method_types: ["card", "ideal", "sofort"], 
     });
 
-    res.send({
-      clientSecret: paymentIntent.client_secret,
-    });
+    res.status(200).json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.error("Erro ao criar PaymentIntent:", error);
-    res
-      .status(500)
-      .send({ mensagem: "Erro ao criar PaymentIntent", error: error.message });
+    console.error("Erro ao criar Payment Intent:", error);
+    res.status(500).json({ error: "Erro ao criar Payment Intent" });
   }
 };
 
-exports.createMBWayPayment = async (req, res) => {
-  const { amount, phoneNumber, id } = req.body;
-
+const checkPaymentStatus = async (paymentIntentId) => {
   try {
-    let token = getAuthToken();
-    if (!token) {
-      token = await authenticate();
-    }
-    const response = await axios.post(
-      `${eupagoConfig.apiUrl}/mbway/create`,
-
-      {
-        amount,
-        phoneNumber,
-        id,
-      },
-
-      {
-        headers: {
-          ApiKey: eupagoConfig.apiKey,
-        },
-      }
-    );
-
-    res.status(200).json(response.data);
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    return paymentIntent.status;
   } catch (error) {
-    if (error.response && error.response.status === 401) {
-      await authenticate();
-      return exports.createMBWayPayment(req, res);
-    }
-    res.status(500).json({ error: error.message });
+    console.error("Erro ao verificar status do pagamento:", error);
   }
 };
 
-exports.createMultibancoReference = async (req, res) => {
-  const { amount, reference, description, expirationDate } = req.body;
+const getPaymentStatus = async (req, res) => {
+  const { paymentIntentId } = req.params;
+
+  if (!paymentIntentId) {
+    return res.status(400).json({ error: "PaymentIntent ID não fornecido." });
+  }
 
   try {
-    let token = getAuthToken();
-    if (!token) {
-      token = await authenticate();
+    const status = await checkPaymentStatus(paymentIntentId);
+
+    if (status) {
+      res.status(200).json({ status });
+    } else {
+      res.status(404).json({ error: "PaymentIntent não encontrado." });
     }
-
-    const response = await axios.post(
-      `${eupagoConfig.apiUrl}/multibanco/create`,
-      {
-        amount,
-        reference,
-        description: description || `Pagamento do cliente ${reference}`,
-        expirationDate: expirationDate || null,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          ApiKey: eupagoConfig.apiKey, // Inclui ApiKey aqui
-        },
-      }
-    );
-
-    res.status(200).json(response.data);
   } catch (error) {
-    if (error.response && error.response.status === 401) {
-      await authenticate();
-      return exports.createMultibancoReference(req, res);
-    }
-    res.status(500).json({ error: error.message });
+    console.error("Erro ao verificar status do pagamento:", error.message);
+    res.status(500).json({ error: "Erro ao verificar status do pagamento." });
   }
 };
 
-exports.getPaymentStatus = async (req, res) => {
-  const { trid } = req.params;
+const webhook = (req, res) => {
+  const sig = req.headers["stripe-signature"];
+  let event;
 
   try {
-    let token = getAuthToken();
-    if (!token) {
-      token = await authenticate();
-    }
-
-    const response = await axios.get(
-      `${eupagoConfig.apiUrl}/payouts/transactions/${trid}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          ApiKey: eupagoConfig.apiKey, // Inclui ApiKey aqui
-        },
-      }
-    );
-
-    res.status(200).json(response.data);
-  } catch (error) {
-    if (error.response && error.response.status === 401) {
-      await authenticate();
-      return exports.getPaymentStatus(req, res);
-    }
-    res.status(500).json({ error: error.message });
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error("Erro na verificação do webhook:", err.message);
+    res.status(400).send(`Erro no Webhook: ${err.message}`);
+    return;
   }
+
+  switch (event.type) {
+    case "payment_intent.created":
+      handlePaymentIntentCreated(event.data.object);
+      break;
+    case "payment_intent.payment_failed":
+      handlePaymentIntentFailed(event.data.object);
+      break;
+    case "payment_intent.succeeded":
+      handlePaymentIntentSucceeded(event.data.object);
+      break;
+    default:
+      console.log(`Tipo de evento não tratado: ${event.type}`);
+  }
+
+  res.status(200).json({ received: true });
 };
 
-exports.getPaymentsByDateRange = async (req, res) => {
-  const { start_date, end_date } = req.query;
+function handlePaymentIntentCreated(paymentIntent) {
+  console.log("PaymentIntent criado:", paymentIntent.id);
+}
 
-  if (!start_date || !end_date) {
-    return res
-      .status(400)
-      .json({ message: "As datas start_date e end_date são obrigatórias." });
-  }
+function handlePaymentIntentFailed(paymentIntent) {
+  console.log("Pagamento falhou para PaymentIntent:", paymentIntent.id);
+}
 
-  try {
-    let token = getAuthToken();
-    if (!token) {
-      token = await authenticate();
-    }
+function handlePaymentIntentSucceeded(paymentIntent) {
+  console.log("Pagamento bem-sucedido para PaymentIntent:", paymentIntent.id);
+}
 
-    const response = await axios.get(`${eupagoConfig.apiUrl}/payouts`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        ApiKey: eupagoConfig.apiKey, // Inclui ApiKey aqui
-      },
-      params: {
-        start_date,
-        end_date,
-      },
-    });
-
-    res.status(200).json(response.data);
-  } catch (error) {
-    if (error.response && error.response.status === 401) {
-      await authenticate();
-      return exports.getPaymentsByDateRange(req, res);
-    }
-    res.status(500).json({ error: error.message });
-  }
+module.exports = {
+  createPaymentIntent,
+  webhook,
+  checkPaymentStatus,
+  getPaymentStatus,
 };

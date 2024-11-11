@@ -1,10 +1,11 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const paymentController = require('../controller/paymentController');
+const paymentController = require("../controller/paymentController");
 
-router.post('/mbway', paymentController.createMBWayPayment);
-router.post('/multibanco', paymentController.createMultibancoReference);
-router.get('/status/:trid', paymentController.getPaymentStatus);
-router.get('/', paymentController.getPaymentsByDateRange);
+router.post("/create-payment-intent", paymentController.createPaymentIntent);
+
+router.post("/webhook", express.raw({ type: "application/json" }), paymentController.webhook);
+
+router.get("/:paymentIntentId", paymentController.getPaymentStatus);
 
 module.exports = router;

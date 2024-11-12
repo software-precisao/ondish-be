@@ -9,12 +9,12 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 const createPaymentIntent = async (req, res) => {
   try {
-    const { amount } = req.body; 
+    const { amount } = req.body;
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: "eur",
-      payment_method_types: ["card", "ideal", "sofort"], 
+      payment_method_types: ["card", "multibanco", "bancontact"],
     });
 
     res.status(200).json({ clientSecret: paymentIntent.client_secret });
@@ -59,28 +59,31 @@ const webhook = (req, res) => {
   let event;
 
   try {
+    // Verifique a assinatura do webhook com o corpo da requisição bruto
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+
+    // Se a assinatura for verificada com sucesso, processamos o evento
+    console.log("Webhook verificado com sucesso!");
+
+    switch (event.type) {
+      case "payment_intent.created":
+        handlePaymentIntentCreated(event.data.object);
+        break;
+      case "payment_intent.payment_failed":
+        handlePaymentIntentFailed(event.data.object);
+        break;
+      case "payment_intent.succeeded":
+        handlePaymentIntentSucceeded(event.data.object);
+        break;
+      default:
+        console.log(`Tipo de evento não tratado: ${event.type}`);
+    }
+
+    res.status(200).json({ received: true });
   } catch (err) {
     console.error("Erro na verificação do webhook:", err.message);
     res.status(400).send(`Erro no Webhook: ${err.message}`);
-    return;
   }
-
-  switch (event.type) {
-    case "payment_intent.created":
-      handlePaymentIntentCreated(event.data.object);
-      break;
-    case "payment_intent.payment_failed":
-      handlePaymentIntentFailed(event.data.object);
-      break;
-    case "payment_intent.succeeded":
-      handlePaymentIntentSucceeded(event.data.object);
-      break;
-    default:
-      console.log(`Tipo de evento não tratado: ${event.type}`);
-  }
-
-  res.status(200).json({ received: true });
 };
 
 function handlePaymentIntentCreated(paymentIntent) {

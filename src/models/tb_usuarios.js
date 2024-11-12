@@ -52,6 +52,10 @@ const Usuario = conn.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    stripeCustomerId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   { freezeTableName: true }
 );

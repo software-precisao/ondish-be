@@ -7,7 +7,8 @@ const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
 const PreferenciasUsuario = require("../models/tb_preferencias_user");
 const { sendPushNotification } = require("../utils/pushNotification");
-// const { sendSms } = require('../utils/smsToken') 
+// const { sendSms } = require('../utils/smsToken')
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const nodemailer = require("nodemailer");
 const path = require("path");
@@ -96,7 +97,7 @@ const registrarNumeroTelefone = async (req, res) => {
   }
 };
 
-//CÓDIGO COM O ENVIO DE SMS, TEM QUE CORRIGIR QUANDO CONSEGUIR AS CHAVES 
+//CÓDIGO COM O ENVIO DE SMS, TEM QUE CORRIGIR QUANDO CONSEGUIR AS CHAVES
 // const registrarNumeroTelefone = async (req, res) => {
 //   try {
 //     const { numero_telefone, id_nivel, id_status } = req.body;
@@ -203,6 +204,27 @@ const concluirRegistro = async (req, res) => {
         email_ofertas_parceiros: true,
       });
     }
+
+    const existingCustomers = await stripe.customers.list({
+      email: email,
+      limit: 1,
+    });
+
+    let stripeCustomerId;
+    if (existingCustomers.data.length > 0) {
+      stripeCustomerId = existingCustomers.data[0].id;
+    } else {
+      const newCustomer = await stripe.customers.create({
+        name: `${nome} ${sobrenome}`,
+        email: email,
+      });
+      stripeCustomerId = newCustomer.id;
+    }
+
+    await Usuario.update(
+      { stripeCustomerId: stripeCustomerId },
+      { where: { id_user } }
+    );
 
     return res
       .status(200)

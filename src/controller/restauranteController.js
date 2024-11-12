@@ -15,6 +15,7 @@ const FotoBebidas = require("../models/tb_foto_bebidas");
 const Sobremesa = require("../models/tb_sobremesas");
 const FotoSobremesas = require("../models/tb_foto_sobremesas");
 const Cozinha = require("../models/tb_cozinha_restaurante");
+const Pedido = require("../models/tb_pedido");
 
 const restauranteController = {
   criarRestaurante: async (req, res) => {
@@ -145,6 +146,10 @@ const restauranteController = {
               },
             ],
           },
+          {
+            model: Pedido,
+            as: "pedidos",
+          },
         ],
       });
 
@@ -157,7 +162,6 @@ const restauranteController = {
       });
     }
   },
-
   buscarRestaurantePorId: async (req, res) => {
     try {
       const { id } = req.params;

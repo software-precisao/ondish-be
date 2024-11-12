@@ -20,6 +20,8 @@ const Sobremesa = require("./src/models/tb_sobremesas");
 const FotoSobremesas = require("./src/models/tb_foto_sobremesas");
 const Sala = require("./src/models/tb_sala");
 const SalaConvidado = require("./src/models/tb_sala_convidado");
+const Pedido = require("./src/models/tb_pedido");
+
 
 Restaurante.hasMany(Pratos, {
   foreignKey: "id_restaurante",
@@ -79,6 +81,12 @@ Sala.hasMany(SalaConvidado, {
 SalaConvidado.belongsTo(Sala, {
   foreignKey: "id_sala",
   as: "salas",
+});
+
+
+Restaurante.hasMany(Pedido, {
+  foreignKey: "id_restaurante",
+  as: "pedidos",
 });
 
 // Rotas

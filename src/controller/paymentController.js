@@ -1,6 +1,7 @@
 const axios = require("axios");
 const Stripe = require("stripe");
 const dotenv = require("dotenv");
+const Pedido = require("../models/tb_pedido");
 
 dotenv.config();
 
@@ -9,10 +10,15 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 const createPaymentIntent = async (req, res) => {
   try {
-    const { amount } = req.body;
+    const { id_pedido } = req.body;
+
+    const pedido = await Pedido.findByPk(id_pedido);
+    if (!pedido) {
+      return res.status(404).json({ error: "Pedido não encontrado." });
+    }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: pedido.valor_total * 100, 
       currency: "eur",
       payment_method_types: ["card", "multibanco", "bancontact"],
     });
@@ -23,6 +29,7 @@ const createPaymentIntent = async (req, res) => {
     res.status(500).json({ error: "Erro ao criar Payment Intent" });
   }
 };
+
 
 const checkPaymentStatus = async (paymentIntentId) => {
   try {

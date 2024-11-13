@@ -93,15 +93,28 @@ const webhook = (req, res) => {
   }
 };
 
-function handlePaymentIntentCreated(paymentIntent) {
+async function handlePaymentIntentCreated(paymentIntent) {
+  await Pedido.update(
+    { status: "Pagamento em progresso" },
+    { where: { id_payment_intent: paymentIntent.id } }
+  );
   console.log("PaymentIntent criado:", paymentIntent.id);
 }
 
-function handlePaymentIntentFailed(paymentIntent) {
+async function handlePaymentIntentFailed(paymentIntent) {
+  await Pedido.update(
+    { status: "Pagamento falhou" },
+    { where: { id_payment_intent: paymentIntent.id } }
+  );
   console.log("Pagamento falhou para PaymentIntent:", paymentIntent.id);
 }
 
-function handlePaymentIntentSucceeded(paymentIntent) {
+
+async function handlePaymentIntentSucceeded(paymentIntent) {
+  await Pedido.update(
+    { status: "Pago", pago: true },
+    { where: { id_payment_intent: paymentIntent.id } }
+  );
   console.log("Pagamento bem-sucedido para PaymentIntent:", paymentIntent.id);
 }
 

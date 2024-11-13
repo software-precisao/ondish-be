@@ -8,27 +8,112 @@ dotenv.config();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+// cartão de crédito
+const createCardPaymentIntent = async (pedido, tokenId) => {
+  const paymentMethod = await stripe.paymentMethods.create({
+    type: "card",
+    card: { token: tokenId },
+  });
+
+  return await stripe.paymentIntents.create({
+    amount: pedido.valor_total * 100, 
+    currency: "eur",
+    payment_method: paymentMethod.id,
+    confirm: true,
+  });
+};
+
+// multibanco
+const createMultibancoPaymentIntent = async (pedido) => {
+  return await stripe.paymentIntents.create({
+    amount: pedido.valor_total * 100,
+    currency: "eur",
+    payment_method_types: ["multibanco"],
+  });
+};
+
+//banco act
+const createBancontactPaymentIntent = async (pedido) => {
+  try {
+    const returnUrl = "https://ondish.com"; // Defina sua URL de retorno
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: pedido.valor_total * 100, 
+      currency: "eur",
+      payment_method_types: ["bancontact"], 
+      confirm: true, // Confirma o pagamento imediatamente
+
+      return_url: returnUrl, 
+    });
+
+    return paymentIntent;
+  } catch (error) {
+    console.error("Erro ao criar PaymentIntent para Bancontact:", error.message);
+    throw error; 
+  }
+};
+
+const confirmBancontactPaymentIntent = async (paymentIntentId, paymentMethodId) => {
+  try {
+    const paymentIntent = await stripe.paymentIntents.confirm(paymentIntentId, {
+      payment_method: paymentMethodId,
+    });
+
+    return paymentIntent;
+  } catch (error) {
+    console.error("Erro ao confirmar o PaymentIntent:", error.message);
+    throw error;
+  }
+};
+
+
+
+
 const createPaymentIntent = async (req, res) => {
   try {
-    const { id_pedido } = req.body;
+    const { id_pedido, metodo_pagamento, payment_method_id } = req.body;
 
     const pedido = await Pedido.findByPk(id_pedido);
     if (!pedido) {
       return res.status(404).json({ error: "Pedido não encontrado." });
     }
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: pedido.valor_total * 100, 
-      currency: "eur",
-      payment_method_types: ["card", "multibanco", "bancontact"],
-    });
+    let paymentIntent;
+
+    switch (metodo_pagamento) {
+      case "card":
+        if (!payment_method_id) {
+          return res.status(400).json({ error: "Token de cartão não fornecido." });
+        }
+        paymentIntent = await createCardPaymentIntent(pedido, payment_method_id);
+        break;
+
+      case "multibanco":
+        paymentIntent = await createMultibancoPaymentIntent(pedido);
+        break;
+
+      case "bancontact":
+        paymentIntent = await createBancontactPaymentIntent(pedido);
+
+        if (!payment_method_id) {
+          return res.status(400).json({ error: "Payment method ID não fornecido." });
+        }
+
+        paymentIntent = await confirmBancontactPaymentIntent(paymentIntent.id, payment_method_id);
+        break;
+
+      default:
+        return res.status(400).json({ error: "Método de pagamento inválido." });
+    }
 
     res.status(200).json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.error("Erro ao criar Payment Intent:", error);
+    console.error("Erro ao criar Payment Intent:", error.message);
     res.status(500).json({ error: "Erro ao criar Payment Intent" });
   }
 };
+
+
 
 
 const checkPaymentStatus = async (paymentIntentId) => {

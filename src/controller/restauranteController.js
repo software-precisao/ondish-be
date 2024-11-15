@@ -17,7 +17,62 @@ const FotoSobremesas = require("../models/tb_foto_sobremesas");
 const Cozinha = require("../models/tb_cozinha_restaurante");
 const Pedido = require("../models/tb_pedido");
 
+const fs = require("fs");
+const path = require("path");
+
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+async function uploadIdentityDocument(filePath) {
+  try {
+    // Caminho completo do arquivo (ajuste conforme sua estrutura de pastas)
+    const absoluteFilePath = path.join(
+      __dirname,
+      "..",
+      "..",
+      `/public/logo/${filePath}`
+    ); // Exemplo de diretório 'uploads'
+    console.log(absoluteFilePath);
+
+    if (!fs.existsSync(absoluteFilePath)) {
+      throw new Error("Arquivo não encontrado no caminho especificado");
+    }
+
+    const file = await stripe.files.create({
+      purpose: "identity_document",
+      file: {
+        data: fs.createReadStream(absoluteFilePath),
+        name: filePath, // Nome do arquivo
+        type: "image/jpeg", // Certificando-se de que o tipo é 'image/jpeg' para um arquivo JPG
+      },
+    });
+
+    console.log("Documento de identidade enviado:", file);
+    return file.id; // Retorna o ID do arquivo, que pode ser usado posteriormente
+  } catch (error) {
+    console.error("Erro ao enviar o documento:", error);
+    throw error;
+  }
+}
+
+async function updateIdentityVerification(accountId, fileId) {
+  try {
+    const verification = await stripe.accounts.update(accountId, {
+      individual: {
+        verification: {
+          document: {
+            front: fileId, // Atribuindo o ID do arquivo enviado
+          },
+        },
+      },
+    });
+
+    console.log("Verificação de identidade atualizada:", verification);
+    return verification;
+  } catch (error) {
+    console.error("Erro ao atualizar verificação:", error);
+    throw error;
+  }
+}
 
 const restauranteController = {
   criarRestaurante: async (req, res) => {
@@ -68,25 +123,22 @@ const restauranteController = {
       usuario.config = 1;
       await usuario.save();
 
-      // Criar a conta Stripe
+      // Criar a conta Stripe (sem aceitar TOS)
       const stripeAccount = await stripe.accounts.create({
-        type: "express",
+        type: "custom",
         country: "PT",
         email: `${novoRestaurante.nome_restaurante
           .toLowerCase()
           .replace(/\s+/g, "")}@exemplo.com`,
-        business_type: "company",
+        business_type: "individual",
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
         },
         business_profile: {
           name: novoRestaurante.nome_restaurante,
+          mcc: "5812",
           url: novoRestaurante.website || "https://ondish.com",
-        },
-        tos_acceptance: {
-          date: Math.floor(Date.now() / 1000),
-          ip: req.ip, // IP do usuário
         },
         company: {
           name: novoRestaurante.nome_restaurante,
@@ -94,11 +146,30 @@ const restauranteController = {
           address: {
             line1: novoRestaurante.morada,
             city: novoRestaurante.morada.split(",")[1]?.trim() || "Lisboa",
-            state: "Lisboa",
+            state: "",
             postal_code: novoRestaurante.codigo_postal,
             country: "PT",
           },
           tax_id: novoRestaurante.nif,
+        },
+        individual: {
+          first_name: "PrimeiroNome",
+          last_name: "UltimoNome",
+          email: "representante@exemplo.com",
+          phone: "+351 21 987 6543",
+          dob: {
+            day: 15,
+            month: 6,
+            year: 1980,
+          },
+          address: {
+            line1: novoRestaurante.morada,
+            city: novoRestaurante.morada.split(",")[1]?.trim() || "Lisboa",
+            state: "",
+            postal_code: novoRestaurante.codigo_postal,
+            country: "PT",
+          },
+          id_number: "123456789", // Número de identificação do representante
         },
         external_account: {
           object: "bank_account",
@@ -109,16 +180,30 @@ const restauranteController = {
           account_number: novoRestaurante.ibam,
         },
       });
+      console.log(stripeAccount.id);
+      // Gerar link de onboarding para o usuário aceitar os TOS
+      const accountLink = await stripe.accountLinks.create({
+        account: stripeAccount.id,
+        refresh_url: "https://ondish.com/refresh",
+        return_url: "https://ondish.com/success",
+        type: "account_onboarding",
+      });
+
+      const fileId = await uploadIdentityDocument(filenamelogo);
+
+      // Atualizar a verificação de identidade com o arquivo enviado
+      await updateIdentityVerification(stripeAccount.id, fileId);
 
       // Atualizar o restaurante com o ID da conta Stripe
       await novoRestaurante.update({ stripe_account_id: stripeAccount.id });
 
-      // Resposta de sucesso
+      // Resposta de sucesso com link de onboarding
       const response = {
         mensagem: "Restaurante cadastrado com sucesso!",
         restauranteCriado: {
           id_restaurante: novoRestaurante.id_restaurante,
           stripe_account_id: stripeAccount.id,
+          onboarding_url: accountLink.url,
           request: {
             tipo: "GET",
           },

@@ -293,41 +293,6 @@ const criarUsuarioRestaurante = async (req, res, next) => {
       token: uuidv4(),
     });
 
-    const splitAccount = await stripe.accounts.create({
-      type: "express",
-      country: "PT",
-      email: novoUsuario.email,
-      business_type: "company",
-      company: {
-        name: `${novoUsuario.nome} ${novoUsuario.sobrenome}`,
-      },
-    });
-
-    // Criar cliente no Stripe para o restaurante
-    const existingCustomers = await stripe.customers.list({
-      email: novoUsuario.email,
-      limit: 1,
-    });
-
-    let stripeCustomerId;
-    if (existingCustomers.data.length > 0) {
-      stripeCustomerId = existingCustomers.data[0].id;
-    } else {
-      const newCustomer = await stripe.customers.create({
-        name: `${novoUsuario.nome} ${novoUsuario.sobrenome}`,
-        email: novoUsuario.email,
-      });
-      stripeCustomerId = newCustomer.id;
-    }
-
-    await Usuario.update(
-      {
-        stripeAccountId: splitAccount.id,
-        stripeCustomerId: stripeCustomerId,
-      },
-      { where: { id_user: novoUsuario.id_user } }
-    );
-
     const response = {
       mensagem: "Usuário cadastrado com sucesso e Token único gerado!",
       usuarioCriado: {
@@ -335,8 +300,6 @@ const criarUsuarioRestaurante = async (req, res, next) => {
         nome: novoUsuario.nome,
         email: novoUsuario.email,
         nivel: novoUsuario.id_nivel,
-        stripeAccountId: splitAccount.id, // ID da conta de split
-        stripeCustomerId: stripeCustomerId, // ID do cliente no Stripe
         token_unico: tokenUsuario.token,
         request: {
           tipo: "GET",

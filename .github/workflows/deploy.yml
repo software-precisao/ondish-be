@@ -1,4 +1,4 @@
-name: Deploy Node.js App to Cpanel
+name: Deploy Backend to VPS
 
 on:
   push:
@@ -6,27 +6,28 @@ on:
       - prod
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '20'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Deploy to Cpanel
-      uses: SamKirkland/FTP-Deploy-Action@4.1.0
-      with:
-        server: server35.integrator.com.br
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        port: 21
-        protocol: ftp
-        local-dir: ./
-        server-dir: /applications/ondishserver/
+      - name: Deploy to VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_USER: root
+          REMOTE_HOST: 147.79.87.223
+          PM2_APP_NAME: server
+          REMOTE_BACKEND_PATH: /var/www/backends/ondish
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key $REMOTE_USER@$REMOTE_HOST "
+            cd $REMOTE_BACKEND_PATH &&
+            git stash &&
+            git pull origin prod &&
+            git stash pop || true &&
+            npm install &&
+            pm2 reload $PM2_APP_NAME || pm2 start server.js --name $PM2_APP_NAME
+          "
+          

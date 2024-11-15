@@ -17,6 +17,8 @@ const FotoSobremesas = require("../models/tb_foto_sobremesas");
 const Cozinha = require("../models/tb_cozinha_restaurante");
 const Pedido = require("../models/tb_pedido");
 
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 const restauranteController = {
   criarRestaurante: async (req, res) => {
     try {
@@ -27,6 +29,7 @@ const restauranteController = {
         ? req.files.logo[0].filename
         : "default-logo.png";
 
+      // Criar o novo restaurante
       const novoRestaurante = await Restaurante.create({
         nif: req.body.nif,
         nome_restaurante: req.body.nome_restaurante,
@@ -43,20 +46,13 @@ const restauranteController = {
         id_user: req.body.id_user,
       });
 
+      // Gerar QR Code
       const qrData = novoRestaurante.id_restaurante.toString();
       const qrCodeURL = await QRCode.toDataURL(qrData);
-
       await novoRestaurante.update({ qrcode: qrCodeURL });
 
-      /* const novoQrcode = await Qrcode.create({
-        qrcode: qrCodeURL,
-        id_restaurante: novoRestaurante.id_restaurante,
-        id_mesa: req.body.id_mesa, 
-      });
- */
-
-      let id_user = req.body.id_user;
-
+      // Verificar o usuário
+      const id_user = req.body.id_user;
       const usuario = await Usuario.findByPk(id_user);
       if (!usuario) {
         return res.status(404).send({ mensagem: "Usuário não encontrado!" });
@@ -68,14 +64,61 @@ const restauranteController = {
           .send({ mensagem: "A configuração do usuário não é 2!" });
       }
 
+      // Atualizar configuração do usuário
       usuario.config = 1;
       await usuario.save();
 
+      // Criar a conta Stripe
+      const stripeAccount = await stripe.accounts.create({
+        type: "express",
+        country: "PT",
+        email: `${novoRestaurante.nome_restaurante
+          .toLowerCase()
+          .replace(/\s+/g, "")}@exemplo.com`,
+        business_type: "company",
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        business_profile: {
+          name: novoRestaurante.nome_restaurante,
+          url: novoRestaurante.website || "https://ondish.com",
+        },
+        tos_acceptance: {
+          date: Math.floor(Date.now() / 1000),
+          ip: req.ip, // IP do usuário
+        },
+        company: {
+          name: novoRestaurante.nome_restaurante,
+          phone: novoRestaurante.telefone1,
+          address: {
+            line1: novoRestaurante.morada,
+            city: novoRestaurante.morada.split(",")[1]?.trim() || "Lisboa",
+            state: "Lisboa",
+            postal_code: novoRestaurante.codigo_postal,
+            country: "PT",
+          },
+          tax_id: novoRestaurante.nif,
+        },
+        external_account: {
+          object: "bank_account",
+          country: "PT",
+          currency: "EUR",
+          account_holder_name: novoRestaurante.nome_restaurante,
+          account_holder_type: "company",
+          account_number: novoRestaurante.ibam,
+        },
+      });
+
+      // Atualizar o restaurante com o ID da conta Stripe
+      await novoRestaurante.update({ stripe_account_id: stripeAccount.id });
+
+      // Resposta de sucesso
       const response = {
         mensagem: "Restaurante cadastrado com sucesso!",
         restauranteCriado: {
           id_restaurante: novoRestaurante.id_restaurante,
-          //qrcode: novoQrcode.qrcode,
+          stripe_account_id: stripeAccount.id,
           request: {
             tipo: "GET",
           },

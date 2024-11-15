@@ -30,3 +30,4 @@ jobs:
             npm install &&
             pm2 reload $PM2_APP_NAME || pm2 start server.js --name $PM2_APP_NAME
           "
+          

@@ -1,7 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const conn = require("../../data/conn");
 
-
 const Usuario = require("./tb_usuarios");
 
 const Restaurante = conn.define(
@@ -69,6 +68,10 @@ const Restaurante = conn.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    stripe_account_id: {
+      type: DataTypes.STRING,
+      allowNull: true, // Pode ser nulo inicialmente
+    },
   },
   { freezeTableName: true }
 );
@@ -79,7 +82,5 @@ Restaurante.belongsTo(Usuario, {
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
-
-
 
 module.exports = Restaurante;

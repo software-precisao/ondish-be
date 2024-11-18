@@ -156,9 +156,9 @@ const restauranteController = {
           email: usuario.email,
           phone: usuario.telefone1,
           dob: {
-            day: usuario.data_nascimento.split("/")[0],
-            month: usuario.data_nascimento.split("/")[1],
-            year: usuario.data_nascimento.split("/")[2],
+            day: usuario.data_nascimento.split("-")[2],
+            month: usuario.data_nascimento.split("-")[1],
+            year: usuario.data_nascimento.split("-")[0],
           },
           address: {
             line1: usuario.logradouro,

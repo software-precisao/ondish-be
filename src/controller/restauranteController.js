@@ -30,19 +30,30 @@ async function uploadIdentityDocument(filePath) {
       "..",
       "..",
       `/public/logo/${filePath}`
-    ); // Exemplo de diretório 'uploads'
+    );
     console.log(absoluteFilePath);
 
     if (!fs.existsSync(absoluteFilePath)) {
       throw new Error("Arquivo não encontrado no caminho especificado");
     }
 
+    // Verifica o tipo do arquivo com base na extensão
+    const fileExtension = path.extname(filePath).toLowerCase();
+    let fileType;
+    if (fileExtension === ".jpg" || fileExtension === ".jpeg") {
+      fileType = "image/jpeg";
+    } else if (fileExtension === ".png") {
+      fileType = "image/png";
+    } else {
+      throw new Error("Tipo de arquivo não suportado. Use JPG ou PNG.");
+    }
+
     const file = await stripe.files.create({
       purpose: "identity_document",
       file: {
         data: fs.createReadStream(absoluteFilePath),
-        name: filePath, // Nome do arquivo
-        type: "image/jpeg", // Certificando-se de que o tipo é 'image/jpeg' para um arquivo JPG
+        name: filePath,
+        type: fileType, // Define o tipo com base na extensão
       },
     });
 
@@ -99,7 +110,7 @@ const restauranteController = {
         morada: req.body.morada,
         codigo_postal: req.body.codigo_postal,
         id_user: req.body.id_user,
-        mcc: req.body.mcc
+        mcc: req.body.mcc,
       });
 
       // Gerar QR Code

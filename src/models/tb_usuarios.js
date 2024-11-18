@@ -60,6 +60,34 @@ const Usuario = conn.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    nif: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    data_nascimento: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    logradouro: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    cidade: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    estado: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    cep: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    imagem_documento_identidade: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   { freezeTableName: true }
 );

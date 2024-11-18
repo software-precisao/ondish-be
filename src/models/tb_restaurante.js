@@ -63,7 +63,6 @@ const Restaurante = conn.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-
     id_user: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -71,6 +70,10 @@ const Restaurante = conn.define(
     stripe_account_id: {
       type: DataTypes.STRING,
       allowNull: true, // Pode ser nulo inicialmente
+    },
+    mcc: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   { freezeTableName: true }

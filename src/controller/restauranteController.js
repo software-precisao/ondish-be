@@ -99,6 +99,7 @@ const restauranteController = {
         morada: req.body.morada,
         codigo_postal: req.body.codigo_postal,
         id_user: req.body.id_user,
+        mcc: req.body.mcc
       });
 
       // Gerar QR Code

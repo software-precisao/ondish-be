@@ -277,6 +277,10 @@ const criarUsuarioRestaurante = async (req, res, next) => {
       ? req.files.avatar[0].filename
       : "default-avatar.png";
 
+    const documentoIdentidade = req.files.documento
+      ? req.files.documento[0].filename
+      : "default-documento.png";
+
     const novoUsuario = await Usuario.create({
       nome: req.body.nome,
       sobrenome: req.body.sobrenome,
@@ -286,6 +290,13 @@ const criarUsuarioRestaurante = async (req, res, next) => {
       id_status: 1,
       avatar: `/avatar/${filename}`,
       config: 2,
+      nif: req.body.nif,
+      data_nascimento: req.body.data_nascimento,
+      logradouro: req.body.logradouro,
+      cidade: req.body.cidade,
+      estado: req.body.estado,
+      cep: req.body.cep,
+      imagem_documento_identidade: `/documento/${documentoIdentidade}`,
     });
 
     const tokenUsuario = await Token.create({

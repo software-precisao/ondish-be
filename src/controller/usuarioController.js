@@ -285,6 +285,7 @@ const criarUsuarioRestaurante = async (req, res, next) => {
       nome: req.body.nome,
       sobrenome: req.body.sobrenome,
       email: req.body.email,
+      numero_telefone: req.body.numero_telefone,
       senha: hashedPassword,
       id_nivel: 2,
       id_status: 1,

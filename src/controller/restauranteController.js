@@ -29,7 +29,7 @@ async function uploadIdentityDocument(filePath) {
       __dirname,
       "..",
       "..",
-      `/public/logo/${filePath}`
+      `/public/documento/${filePath}`
     );
     console.log(absoluteFilePath);
 
@@ -139,7 +139,7 @@ const restauranteController = {
       const stripeAccount = await stripe.accounts.create({
         type: "custom",
         country: "PT",
-        email: usuario.email,
+        email: novoRestaurante.email,
         business_type: "individual",
         capabilities: {
           card_payments: { requested: true },
@@ -147,26 +147,26 @@ const restauranteController = {
         },
         business_profile: {
           name: novoRestaurante.nome_restaurante,
-          mcc: req.body.mcc,
+          mcc: novoRestaurante.mcc,
           url: novoRestaurante.website,
         },
         individual: {
-          first_name: req.body.nome,
-          last_name: req.body.sobrenome,
-          email: req.body.email,
-          phone: req.body.telefone1,
+          first_name: usuario.nome,
+          last_name: usuario.sobrenome,
+          email: usuario.email,
+          phone: usuario.telefone1,
           dob: {
-            day: req.body.dia_nascimento,
-            month: req.body.mes_nascimento,
-            year: req.body.ano_nascimento,
+            day: usuario.data_nascimento.split("/")[0],
+            month: usuario.data_nascimento.split("/")[1],
+            year: usuario.data_nascimento.split("/")[2],
           },
           address: {
-            line1: novoRestaurante.morada,
-            city: req.body.cidade,
-            postal_code: novoRestaurante.codigo_postal,
+            line1: usuario.logradouro,
+            city: usuario.cidade,
+            postal_code: usuario.cep,
             country: "PT",
           },
-          id_number: req.body.numero_identificacao,
+          id_number: usuario.numero_identificacao,
         },
         external_account: {
           object: "bank_account",

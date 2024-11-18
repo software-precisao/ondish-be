@@ -135,13 +135,11 @@ const restauranteController = {
       usuario.config = 1;
       await usuario.save();
 
-      // Criar a conta Stripe (sem aceitar TOS)
+      // Criar a conta Stripe (usando os dados do usuário)
       const stripeAccount = await stripe.accounts.create({
         type: "custom",
         country: "PT",
-        email: `${novoRestaurante.nome_restaurante
-          .toLowerCase()
-          .replace(/\s+/g, "")}@exemplo.com`,
+        email: usuario.email,
         business_type: "individual",
         capabilities: {
           card_payments: { requested: true },
@@ -149,39 +147,26 @@ const restauranteController = {
         },
         business_profile: {
           name: novoRestaurante.nome_restaurante,
-          mcc: "5812",
-          url: novoRestaurante.website || "https://ondish.com",
-        },
-        company: {
-          name: novoRestaurante.nome_restaurante,
-          phone: novoRestaurante.telefone1,
-          address: {
-            line1: novoRestaurante.morada,
-            city: novoRestaurante.morada.split(",")[1]?.trim() || "Lisboa",
-            state: "",
-            postal_code: novoRestaurante.codigo_postal,
-            country: "PT",
-          },
-          tax_id: novoRestaurante.nif,
+          mcc: req.body.mcc,
+          url: novoRestaurante.website,
         },
         individual: {
-          first_name: "PrimeiroNome",
-          last_name: "UltimoNome",
-          email: "representante@exemplo.com",
-          phone: "+351 21 987 6543",
+          first_name: req.body.nome,
+          last_name: req.body.sobrenome,
+          email: req.body.email,
+          phone: req.body.telefone1,
           dob: {
-            day: 15,
-            month: 6,
-            year: 1980,
+            day: req.body.dia_nascimento,
+            month: req.body.mes_nascimento,
+            year: req.body.ano_nascimento,
           },
           address: {
             line1: novoRestaurante.morada,
-            city: novoRestaurante.morada.split(",")[1]?.trim() || "Lisboa",
-            state: "",
+            city: req.body.cidade,
             postal_code: novoRestaurante.codigo_postal,
             country: "PT",
           },
-          id_number: "123456789", // Número de identificação do representante
+          id_number: req.body.numero_identificacao,
         },
         external_account: {
           object: "bank_account",
@@ -192,7 +177,7 @@ const restauranteController = {
           account_number: novoRestaurante.ibam,
         },
       });
-      console.log(stripeAccount.id);
+
       // Gerar link de onboarding para o usuário aceitar os TOS
       const accountLink = await stripe.accountLinks.create({
         account: stripeAccount.id,

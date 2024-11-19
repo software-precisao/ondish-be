@@ -24,13 +24,12 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 async function uploadIdentityDocument(filePath) {
   try {
-    // Caminho completo do arquivo (ajuste conforme sua estrutura de pastas)
-    const absoluteFilePath = path.join(
+    const absoluteFilePath = path.resolve(
       __dirname,
-      "..",
-      "..",
-      `/public/documento/${filePath}`
+      "../../public/documento",
+      filePath
     );
+
     console.log(absoluteFilePath);
 
     if (!fs.existsSync(absoluteFilePath)) {

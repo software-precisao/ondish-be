@@ -166,7 +166,7 @@ const restauranteController = {
             postal_code: usuario.cep,
             country: "PT",
           },
-          id_number: usuario.numero_identificacao,
+          id_number: usuario.nif,
         },
         external_account: {
           object: "bank_account",

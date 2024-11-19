@@ -298,8 +298,6 @@ const criarUsuarioRestaurante = async (req, res, next) => {
       estado: req.body.estado,
       cep: req.body.cep,
       imagem_documento_identidade: `/documento/${documentoIdentidade}`,
-      numero_identificacao: req.body.numero_identificacao,
-
     });
 
     const tokenUsuario = await Token.create({

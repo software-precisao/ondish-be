@@ -19,15 +19,17 @@ const Pedido = require("../models/tb_pedido");
 
 const fs = require("fs");
 const path = require("path");
+const { Sequelize } = require("sequelize");
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 async function uploadIdentityDocument(filePath) {
   try {
-    const absoluteFilePath = path.resolve(
+    const absoluteFilePath = path.join(
       __dirname,
-      "../../public/documento",
-      filePath
+      "..",
+      "..",
+      `/public/${filePath}`
     );
 
     console.log(absoluteFilePath);
@@ -172,7 +174,7 @@ const restauranteController = {
             first_name: usuario.nome,
             last_name: usuario.sobrenome,
             email: usuario.email,
-            phone: usuario.telefone1,
+            phone: usuario.numero_telefone,
             dob: {
               day: usuario.data_nascimento.split("-")[2],
               month: usuario.data_nascimento.split("-")[1],
@@ -207,7 +209,7 @@ const restauranteController = {
         type: "account_onboarding",
       });
 
-      const fileId = await uploadIdentityDocument(filenamelogo);
+      const fileId = await uploadIdentityDocument(usuario.imagem_documento_identidade);
 
       await updateIdentityVerification(stripeAccount.id, fileId);
 

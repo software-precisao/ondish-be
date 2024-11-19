@@ -177,34 +177,6 @@ const concluirRegistro = async (req, res) => {
       return res.status(401).send({ mensagem: "PIN inválido." });
     }
 
-    await Usuario.update(
-      {
-        nome,
-        sobrenome,
-        email,
-        senha: await bcrypt.hash(senha, 10),
-        avatar,
-        config,
-        token_notification: token_notification || usuario.token_notification,
-      },
-      { where: { id_user } }
-    );
-
-    const preferenciasExistentes = await PreferenciasUsuario.findOne({
-      where: { id_user },
-    });
-
-    if (!preferenciasExistentes) {
-      await PreferenciasUsuario.create({
-        id_user,
-        notificacoes_pedido: true,
-        notificacoes_dicas_e_promocao: false,
-        email_dicas_e_promocao: true,
-        notificacoes_ofertas_parceiros: false,
-        email_ofertas_parceiros: true,
-      });
-    }
-
     const existingCustomers = await stripe.customers.list({
       email: email,
       limit: 1,
@@ -221,10 +193,36 @@ const concluirRegistro = async (req, res) => {
       stripeCustomerId = newCustomer.id;
     }
 
-    await Usuario.update(
-      { stripeCustomerId: stripeCustomerId },
-      { where: { id_user } }
-    );
+    if (!usuario.stripeCustomerId) {
+      await Usuario.update(
+        {
+          nome,
+          sobrenome,
+          email,
+          senha: await bcrypt.hash(senha, 10),
+          avatar,
+          config,
+          token_notification: token_notification || usuario.token_notification,
+          stripeCustomerId: stripeCustomerId,
+        },
+        { where: { id_user } }
+      );
+    }
+
+    const preferenciasExistentes = await PreferenciasUsuario.findOne({
+      where: { id_user },
+    });
+
+    if (!preferenciasExistentes) {
+      await PreferenciasUsuario.create({
+        id_user,
+        notificacoes_pedido: true,
+        notificacoes_dicas_e_promocao: false,
+        email_dicas_e_promocao: true,
+        notificacoes_ofertas_parceiros: false,
+        email_ofertas_parceiros: true,
+      });
+    }
 
     return res
       .status(200)
@@ -298,8 +296,6 @@ const criarUsuarioRestaurante = async (req, res, next) => {
       estado: req.body.estado,
       cep: req.body.cep,
       imagem_documento_identidade: `/documento/${documentoIdentidade}`,
-      numero_identificacao: req.body.numero_identificacao,
-
     });
 
     const tokenUsuario = await Token.create({

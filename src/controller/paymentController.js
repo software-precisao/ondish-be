@@ -2,6 +2,7 @@ const axios = require("axios");
 const Stripe = require("stripe");
 const dotenv = require("dotenv");
 const Pedido = require("../models/tb_pedido");
+const Restaurante = require("../models/tb_restaurante");
 
 dotenv.config();
 
@@ -53,15 +54,46 @@ const createBancontactPaymentIntent = async (pedido) => {
   }
 };
 
-const confirmBancontactPaymentIntent = async (paymentIntentId, paymentMethodId) => {
+// const confirmBancontactPaymentIntent = async (paymentIntentId, paymentMethodId) => {
+//   try {
+//     const paymentIntent = await stripe.paymentIntents.confirm(paymentIntentId, {
+//       payment_method: paymentMethodId,
+//     });
+
+//     return paymentIntent;
+//   } catch (error) {
+//     console.error("Erro ao confirmar o PaymentIntent:", error.message);
+//     throw error;
+//   }
+// };
+
+
+const createPaymentIntentWithSplit = async (pedido, paymentMethodId) => {
   try {
-    const paymentIntent = await stripe.paymentIntents.confirm(paymentIntentId, {
-      payment_method: paymentMethodId,
+    const restaurante = await Restaurante.findByPk(pedido.id_restaurante);
+    if (!restaurante || !restaurante.stripe_account_id) {
+      throw new Error("Restaurante não encontrado ou sem conta Stripe configurada.");
+    }
+
+    const applicationFee = Math.round(pedido.valor_total * 0.1 * 100); // Taxa da plataforma: 10%
+    const amountToRestaurante = pedido.valor_total * 100 - applicationFee;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: pedido.valor_total * 100, // Valor total em centavos
+      currency: "eur",
+      payment_method: paymentMethodId, // Método de pagamento fornecido pelo cliente
+      confirmation_method: "automatic", // Confirmação automática
+      confirm: true,
+      transfer_data: {
+        amount: amountToRestaurante, // Valor transferido para o restaurante
+        destination: restaurante.stripe_account_id, // Conta do restaurante no Stripe
+      },
+      application_fee_amount: applicationFee, // Taxa da plataforma
     });
 
     return paymentIntent;
   } catch (error) {
-    console.error("Erro ao confirmar o PaymentIntent:", error.message);
+    console.error("Erro ao criar PaymentIntent com split:", error.message);
     throw error;
   }
 };
@@ -83,9 +115,9 @@ const createPaymentIntent = async (req, res) => {
     switch (metodo_pagamento) {
       case "card":
         if (!payment_method_id) {
-          return res.status(400).json({ error: "Token de cartão não fornecido." });
+          return res.status(400).json({ error: "Payment method ID não fornecido." });
         }
-        paymentIntent = await createCardPaymentIntent(pedido, payment_method_id);
+        paymentIntent = await createPaymentIntentWithSplit(pedido, payment_method_id);
         break;
 
       case "multibanco":
@@ -93,18 +125,20 @@ const createPaymentIntent = async (req, res) => {
         break;
 
       case "bancontact":
-        paymentIntent = await createBancontactPaymentIntent(pedido);
-
         if (!payment_method_id) {
           return res.status(400).json({ error: "Payment method ID não fornecido." });
         }
-
-        paymentIntent = await confirmBancontactPaymentIntent(paymentIntent.id, payment_method_id);
+        paymentIntent = await createBancontactPaymentIntent(pedido);
         break;
 
       default:
         return res.status(400).json({ error: "Método de pagamento inválido." });
     }
+
+    await Pedido.update(
+      { id_payment_intent: paymentIntent.id, status: "Pagamento em progresso" },
+      { where: { id_pedido } }
+    );
 
     res.status(200).json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
@@ -112,6 +146,7 @@ const createPaymentIntent = async (req, res) => {
     res.status(500).json({ error: "Erro ao criar Payment Intent" });
   }
 };
+
 
 
 
@@ -194,7 +229,6 @@ async function handlePaymentIntentFailed(paymentIntent) {
   console.log("Pagamento falhou para PaymentIntent:", paymentIntent.id);
 }
 
-
 async function handlePaymentIntentSucceeded(paymentIntent) {
   await Pedido.update(
     { status: "Pago", pago: true },
@@ -205,6 +239,7 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
 
 module.exports = {
   createPaymentIntent,
+  createPaymentIntentWithSplit,
   webhook,
   checkPaymentStatus,
   getPaymentStatus,

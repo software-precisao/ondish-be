@@ -94,7 +94,22 @@ const restauranteController = {
         ? req.files.logo[0].filename
         : "default-logo.png";
 
-      // Criar o novo restaurante
+      const restauranteExistente = await Restaurante.findOne({
+        where: {
+          [Sequelize.Op.or]: [
+            { nif: req.body.nif },
+            { nome_restaurante: req.body.nome_restaurante },
+          ],
+        },
+      });
+
+      if (restauranteExistente) {
+        return res.status(400).send({
+          mensagem: "Restaurante já cadastrado com este NIF ou nome.",
+          restaurante: restauranteExistente,
+        });
+      }
+
       const novoRestaurante = await Restaurante.create({
         nif: req.body.nif,
         nome_restaurante: req.body.nome_restaurante,
@@ -112,12 +127,10 @@ const restauranteController = {
         mcc: req.body.mcc,
       });
 
-      // Gerar QR Code
       const qrData = novoRestaurante.id_restaurante.toString();
       const qrCodeURL = await QRCode.toDataURL(qrData);
       await novoRestaurante.update({ qrcode: qrCodeURL });
 
-      // Verificar o usuário
       const id_user = req.body.id_user;
       const usuario = await Usuario.findByPk(id_user);
       if (!usuario) {
@@ -130,52 +143,61 @@ const restauranteController = {
           .send({ mensagem: "A configuração do usuário não é 2!" });
       }
 
-      // Atualizar configuração do usuário
-      usuario.config = 1;
-      await usuario.save();
+      if (usuario.config !== 1) {
+        usuario.config = 1;
+        await usuario.save();
+      }
 
-      // Criar a conta Stripe (usando os dados do usuário)
-      const stripeAccount = await stripe.accounts.create({
-        type: "custom",
-        country: "PT",
-        email: novoRestaurante.email,
-        business_type: "individual",
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
-        },
-        business_profile: {
-          name: novoRestaurante.nome_restaurante,
-          mcc: novoRestaurante.mcc,
-          url: novoRestaurante.website,
-        },
-        individual: {
-          first_name: usuario.nome,
-          last_name: usuario.sobrenome,
-          email: usuario.email,
-          phone: usuario.telefone1,
-          dob: {
-            day: usuario.data_nascimento.split("-")[2],
-            month: usuario.data_nascimento.split("-")[1],
-            year: usuario.data_nascimento.split("-")[0],
-          },
-          address: {
-            line1: usuario.logradouro,
-            city: usuario.cidade,
-            postal_code: usuario.cep,
-            country: "PT",
-          },
-          id_number: usuario.nif,
-        },
-        external_account: {
-          object: "bank_account",
+      let stripeAccount;
+      if (novoRestaurante.stripe_account_id) {
+        stripeAccount = await stripe.accounts.retrieve(
+          novoRestaurante.stripe_account_id
+        );
+      } else {
+        stripeAccount = await stripe.accounts.create({
+          type: "custom",
           country: "PT",
-          currency: "EUR",
-          account_holder_name: novoRestaurante.nome_restaurante,
-          account_holder_type: "company",
-          account_number: novoRestaurante.ibam,
-        },
-      });
+          email: novoRestaurante.email,
+          business_type: "individual",
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
+          business_profile: {
+            name: novoRestaurante.nome_restaurante,
+            mcc: novoRestaurante.mcc,
+            url: novoRestaurante.website,
+          },
+          individual: {
+            first_name: usuario.nome,
+            last_name: usuario.sobrenome,
+            email: usuario.email,
+            phone: usuario.telefone1,
+            dob: {
+              day: usuario.data_nascimento.split("-")[2],
+              month: usuario.data_nascimento.split("-")[1],
+              year: usuario.data_nascimento.split("-")[0],
+            },
+            address: {
+              line1: usuario.logradouro,
+              city: usuario.cidade,
+              postal_code: usuario.cep,
+              country: "PT",
+            },
+            id_number: usuario.nif,
+          },
+          external_account: {
+            object: "bank_account",
+            country: "PT",
+            currency: "EUR",
+            account_holder_name: novoRestaurante.nome_restaurante,
+            account_holder_type: "company",
+            account_number: novoRestaurante.ibam,
+          },
+        });
+
+        await novoRestaurante.update({ stripe_account_id: stripeAccount.id });
+      }
 
       // Gerar link de onboarding para o usuário aceitar os TOS
       const accountLink = await stripe.accountLinks.create({
@@ -187,13 +209,8 @@ const restauranteController = {
 
       const fileId = await uploadIdentityDocument(filenamelogo);
 
-      // Atualizar a verificação de identidade com o arquivo enviado
       await updateIdentityVerification(stripeAccount.id, fileId);
 
-      // Atualizar o restaurante com o ID da conta Stripe
-      await novoRestaurante.update({ stripe_account_id: stripeAccount.id });
-
-      // Resposta de sucesso com link de onboarding
       const response = {
         mensagem: "Restaurante cadastrado com sucesso!",
         restauranteCriado: {

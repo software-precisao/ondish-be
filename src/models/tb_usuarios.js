@@ -88,10 +88,6 @@ const Usuario = conn.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    numero_identificacao: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
   },
   { freezeTableName: true }
 );

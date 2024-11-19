@@ -168,7 +168,9 @@ const restauranteController = {
           business_profile: {
             name: novoRestaurante.nome_restaurante,
             mcc: novoRestaurante.mcc,
-            url: novoRestaurante.website,
+            url: novoRestaurante.website
+              ? novoRestaurante.website
+              : novoRestaurante.facebook,
           },
           individual: {
             first_name: usuario.nome,
@@ -209,7 +211,9 @@ const restauranteController = {
         type: "account_onboarding",
       });
 
-      const fileId = await uploadIdentityDocument(usuario.imagem_documento_identidade);
+      const fileId = await uploadIdentityDocument(
+        usuario.imagem_documento_identidade
+      );
 
       await updateIdentityVerification(stripeAccount.id, fileId);
 

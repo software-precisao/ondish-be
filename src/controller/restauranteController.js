@@ -159,7 +159,7 @@ const restauranteController = {
         stripeAccount = await stripe.accounts.create({
           type: "custom",
           country: "PT",
-          email: novoRestaurante.email,
+          email: usuario.email,
           business_type: "individual",
           capabilities: {
             card_payments: { requested: true },
@@ -201,11 +201,10 @@ const restauranteController = {
         await novoRestaurante.update({ stripe_account_id: stripeAccount.id });
       }
 
-      // Gerar link de onboarding para o usuário aceitar os TOS
       const accountLink = await stripe.accountLinks.create({
         account: stripeAccount.id,
-        refresh_url: "https://ondish.com/refresh",
-        return_url: "https://ondish.com/success",
+        refresh_url: "http://localhost:5173/my-dashboard",
+        return_url: "http://localhost:5173/my-dashboard",
         type: "account_onboarding",
       });
 

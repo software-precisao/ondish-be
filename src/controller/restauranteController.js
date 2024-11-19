@@ -168,9 +168,7 @@ const restauranteController = {
           business_profile: {
             name: novoRestaurante.nome_restaurante,
             mcc: novoRestaurante.mcc,
-            url: novoRestaurante.website
-              ? novoRestaurante.website
-              : novoRestaurante.facebook,
+            url: novoRestaurante.website,
           },
           individual: {
             first_name: usuario.nome,

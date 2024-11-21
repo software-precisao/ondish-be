@@ -1,7 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const conn = require("../../data/conn");
 
-
 const CartaoPagamento = conn.define(
   "tb_cartao_pagamento",
   {
@@ -24,7 +23,7 @@ const CartaoPagamento = conn.define(
     },
     cvc: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     token: {
       type: DataTypes.STRING,

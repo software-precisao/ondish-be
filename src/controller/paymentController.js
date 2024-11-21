@@ -17,7 +17,7 @@ const createCardPaymentIntent = async (pedido, tokenId) => {
   });
 
   return await stripe.paymentIntents.create({
-    amount: pedido.valor_total * 100, 
+    amount: pedido.valor_total * 100,
     currency: "eur",
     payment_method: paymentMethod.id,
     confirm: true,
@@ -39,18 +39,21 @@ const createBancontactPaymentIntent = async (pedido) => {
     const returnUrl = "https://ondish.com"; // Defina sua URL de retorno
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: pedido.valor_total * 100, 
+      amount: pedido.valor_total * 100,
       currency: "eur",
-      payment_method_types: ["bancontact"], 
+      payment_method_types: ["bancontact"],
       confirm: true, // Confirma o pagamento imediatamente
 
-      return_url: returnUrl, 
+      return_url: returnUrl,
     });
 
     return paymentIntent;
   } catch (error) {
-    console.error("Erro ao criar PaymentIntent para Bancontact:", error.message);
-    throw error; 
+    console.error(
+      "Erro ao criar PaymentIntent para Bancontact:",
+      error.message
+    );
+    throw error;
   }
 };
 
@@ -67,12 +70,13 @@ const createBancontactPaymentIntent = async (pedido) => {
 //   }
 // };
 
-
 const createPaymentIntentWithSplit = async (pedido, paymentMethodId) => {
   try {
     const restaurante = await Restaurante.findByPk(pedido.id_restaurante);
     if (!restaurante || !restaurante.stripe_account_id) {
-      throw new Error("Restaurante não encontrado ou sem conta Stripe configurada.");
+      throw new Error(
+        "Restaurante não encontrado ou sem conta Stripe configurada."
+      );
     }
 
     const applicationFee = Math.round(pedido.valor_total * 0.1 * 100); // Taxa da plataforma: 10%
@@ -98,9 +102,6 @@ const createPaymentIntentWithSplit = async (pedido, paymentMethodId) => {
   }
 };
 
-
-
-
 const createPaymentIntent = async (req, res) => {
   try {
     const { id_pedido, metodo_pagamento, payment_method_id } = req.body;
@@ -115,9 +116,14 @@ const createPaymentIntent = async (req, res) => {
     switch (metodo_pagamento) {
       case "card":
         if (!payment_method_id) {
-          return res.status(400).json({ error: "Payment method ID não fornecido." });
+          return res
+            .status(400)
+            .json({ error: "Payment method ID não fornecido." });
         }
-        paymentIntent = await createPaymentIntentWithSplit(pedido, payment_method_id);
+        paymentIntent = await createPaymentIntentWithSplit(
+          pedido,
+          payment_method_id
+        );
         break;
 
       case "multibanco":
@@ -126,7 +132,9 @@ const createPaymentIntent = async (req, res) => {
 
       case "bancontact":
         if (!payment_method_id) {
-          return res.status(400).json({ error: "Payment method ID não fornecido." });
+          return res
+            .status(400)
+            .json({ error: "Payment method ID não fornecido." });
         }
         paymentIntent = await createBancontactPaymentIntent(pedido);
         break;
@@ -146,10 +154,6 @@ const createPaymentIntent = async (req, res) => {
     res.status(500).json({ error: "Erro ao criar Payment Intent" });
   }
 };
-
-
-
-
 
 const checkPaymentStatus = async (paymentIntentId) => {
   try {
@@ -237,10 +241,188 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
   console.log("Pagamento bem-sucedido para PaymentIntent:", paymentIntent.id);
 }
 
+// Função para criar PaymentIntent
+async function criarPaymentIntent(totalAmount, stripeCustomerId) {
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: totalAmount, // Total em centavos (e.g., 5000 = 50 EUR)
+      currency: "eur",
+      payment_method_types: ["card"], // Aceita pagamento com cartão
+      customer: stripeCustomerId, // ID do cliente salvo no Stripe
+      transfer_group: `group_${new Date().getTime()}`, // Identificador único
+      description: "Pagamento de pedido no aplicativo",
+    });
+
+    return paymentIntent;
+  } catch (error) {
+    console.error("Erro ao criar PaymentIntent:", error.message);
+    throw error;
+  }
+}
+
+// Função para criar o método de pagamento (Payment Method)
+async function criarPaymentMethod(cardDetails) {
+  try {
+    const paymentMethod = await stripe.paymentMethods.create({
+      type: "card",
+      card: cardDetails, // Dados do cartão: número, validade, CVV
+    });
+
+    return paymentMethod;
+  } catch (error) {
+    console.error("Erro ao criar PaymentMethod:", error.message);
+    throw error;
+  }
+}
+
+// Função para confirmar o pagamento
+async function confirmarPagamento(paymentIntentId, paymentMethodId) {
+  try {
+    const confirmedPayment = await stripe.paymentIntents.confirm(
+      paymentIntentId,
+      {
+        payment_method: paymentMethodId, // ID do PaymentMethod criado
+      }
+    );
+
+    return confirmedPayment;
+  } catch (error) {
+    console.error("Erro ao confirmar pagamento:", error.message);
+    throw error;
+  }
+}
+
+// Função para realizar a transferência para o restaurante
+async function realizarTransferencia(
+  paymentIntent,
+  restauranteStripeAccountId
+) {
+  try {
+    const totalAmount = paymentIntent.amount; // Total em centavos
+    const platformFee = Math.round(totalAmount * 0.12); // 12%
+    const restaurantAmount = totalAmount - platformFee;
+
+    // Transferir para o restaurante
+    await stripe.transfers.create({
+      amount: restaurantAmount,
+      currency: "eur",
+      destination: restauranteStripeAccountId,
+      transfer_group: paymentIntent.transfer_group,
+    });
+
+    console.log("Transferência realizada com sucesso.");
+  } catch (error) {
+    console.error("Erro ao realizar transferência:", error.message);
+    throw error;
+  }
+}
+
+// Função principal para processar o pagamento
+const processarPagamento = async (req, res) => {
+  try {
+    const {
+      totalAmount,
+      paymentMethodId,
+      stripeCustomerId,
+      restauranteStripeAccountId,
+    } = req.body;
+
+    // Verificar dados obrigatórios
+    if (
+      !totalAmount ||
+      !paymentMethodId ||
+      !stripeCustomerId ||
+      !restauranteStripeAccountId
+    ) {
+      return res.status(400).json({ error: "Dados de pagamento incompletos." });
+    }
+
+    // Etapa 1: Criar PaymentIntent
+    const paymentIntent = await criarPaymentIntent(
+      totalAmount,
+      stripeCustomerId
+    );
+    if (!paymentIntent) {
+      return res.status(500).json({ error: "Erro ao criar Payment Intent." });
+    }
+
+    // Etapa 2: Criar PaymentMethod com os detalhes do cartão
+    // const paymentMethod = await criarPaymentMethod(cardDetails);
+    // if (!paymentMethod) {
+    //   return res.status(500).json({ error: "Erro ao criar Payment Method." });
+    // }
+
+    // Etapa 3: Confirmar Pagamento
+    const confirmedPayment = await confirmarPagamento(
+      paymentIntent.id,
+      paymentMethodId
+    );
+    if (!confirmedPayment || confirmedPayment.status !== "succeeded") {
+      return res.status(400).json({ error: "Pagamento não confirmado." });
+    }
+
+    // Etapa 4: Realizar transferência para o restaurante
+    await realizarTransferencia(confirmedPayment, restauranteStripeAccountId);
+
+    console.log("Pagamento processado com sucesso.");
+    return res
+      .status(200)
+      .json({ success: true, message: "Pagamento concluído" });
+  } catch (error) {
+    console.error("Erro no processo de pagamento:", error.message);
+    return res
+      .status(500)
+      .json({ error: "Erro no processo de pagamento", details: error.message });
+  }
+};
+
+const associateCardToCustomer = async (req, res) => {
+  const { customerId, paymentMethodId } = req.body;
+
+  // Verificar se os dados necessários foram fornecidos
+  if (!customerId || !paymentMethodId) {
+    return res.status(400).json({
+      error: "ID do cliente ou ID do método de pagamento não fornecido.",
+    });
+  }
+
+  try {
+    // Recuperar o cliente do Stripe
+    const customer = await stripe.customers.retrieve(customerId);
+
+    // Verificar se o cliente existe
+    if (!customer) {
+      return res.status(404).json({ error: "Cliente não encontrado." });
+    }
+
+    // Associar o método de pagamento ao cliente
+    await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId,
+    });
+
+    // Definir o método de pagamento como o método de pagamento principal do cliente
+    await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
+    });
+
+    // Retornar sucesso
+    res
+      .status(200)
+      .json({ message: "Cartão associado com sucesso ao cliente." });
+  } catch (error) {
+    console.error("Erro ao associar cartão ao cliente:", error.message);
+    res.status(500).json({ error: "Erro ao associar o cartão ao cliente." });
+  }
+};
+
 module.exports = {
   createPaymentIntent,
   createPaymentIntentWithSplit,
   webhook,
   checkPaymentStatus,
   getPaymentStatus,
+  processarPagamento,
+  associateCardToCustomer,
 };

@@ -185,37 +185,37 @@ const getPaymentStatus = async (req, res) => {
   }
 };
 
-const webhook = (req, res) => {
-  const sig = req.headers["stripe-signature"];
-  let event;
+// const webhook = (req, res) => {
+//   const sig = req.headers["stripe-signature"];
+//   let event;
 
-  try {
-    // Verifique a assinatura do webhook com o corpo da requisição bruto
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+//   try {
+//     // Verifique a assinatura do webhook com o corpo da requisição bruto
+//     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
 
-    // Se a assinatura for verificada com sucesso, processamos o evento
-    console.log("Webhook verificado com sucesso!");
+//     // Se a assinatura for verificada com sucesso, processamos o evento
+//     console.log("Webhook verificado com sucesso!");
 
-    switch (event.type) {
-      case "payment_intent.created":
-        handlePaymentIntentCreated(event.data.object);
-        break;
-      case "payment_intent.payment_failed":
-        handlePaymentIntentFailed(event.data.object);
-        break;
-      case "payment_intent.succeeded":
-        handlePaymentIntentSucceeded(event.data.object);
-        break;
-      default:
-        console.log(`Tipo de evento não tratado: ${event.type}`);
-    }
+//     switch (event.type) {
+//       case "payment_intent.created":
+//         handlePaymentIntentCreated(event.data.object);
+//         break;
+//       case "payment_intent.payment_failed":
+//         handlePaymentIntentFailed(event.data.object);
+//         break;
+//       case "payment_intent.succeeded":
+//         handlePaymentIntentSucceeded(event.data.object);
+//         break;
+//       default:
+//         console.log(`Tipo de evento não tratado: ${event.type}`);
+//     }
 
-    res.status(200).json({ received: true });
-  } catch (err) {
-    console.error("Erro na verificação do webhook:", err.message);
-    res.status(400).send(`Erro no Webhook: ${err.message}`);
-  }
-};
+//     res.status(200).json({ received: true });
+//   } catch (err) {
+//     console.error("Erro na verificação do webhook:", err.message);
+//     res.status(400).send(`Erro no Webhook: ${err.message}`);
+//   }
+// };
 
 async function handlePaymentIntentCreated(paymentIntent) {
   await Pedido.update(
@@ -242,12 +242,12 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
 }
 
 // Função para criar PaymentIntent
-async function criarPaymentIntent(totalAmount, stripeCustomerId) {
+async function criarPaymentIntent(totalAmount, stripeCustomerId, paymentType) {
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount, // Total em centavos (e.g., 5000 = 50 EUR)
       currency: "eur",
-      payment_method_types: ["card"], // Aceita pagamento com cartão
+      payment_method_types: [paymentType], // Aceita pagamento com cartão
       customer: stripeCustomerId, // ID do cliente salvo no Stripe
       transfer_group: `group_${new Date().getTime()}`, // Identificador único
       description: "Pagamento de pedido no aplicativo",
@@ -276,8 +276,28 @@ async function criarPaymentMethod(cardDetails) {
 }
 
 // Função para confirmar o pagamento
-async function confirmarPagamento(paymentIntentId, paymentMethodId) {
+async function confirmarPagamento(
+  paymentIntentId,
+  paymentMethodId,
+  metodoPagamento
+) {
   try {
+    // if (metodoPagamento === "mbway") {
+    //   // Chama o webhook para confirmar o pagamento via MB Way
+    //   const paymentStatus = await chamarWebhookMBWay(paymentIntentId);
+
+    //   // Se o pagamento não for confirmado, lançar um erro
+    //   if (paymentStatus !== "succeeded") {
+    //     throw new Error("Pagamento MB Way não confirmado.");
+    //   }
+
+    //   // Caso o pagamento via MB Way seja confirmado, retorna o status de sucesso
+    //   return {
+    //     status: "succeeded",
+    //     message: "Pagamento MB Way confirmado com sucesso.",
+    //   };
+    // }
+
     const confirmedPayment = await stripe.paymentIntents.confirm(
       paymentIntentId,
       {
@@ -289,6 +309,75 @@ async function confirmarPagamento(paymentIntentId, paymentMethodId) {
   } catch (error) {
     console.error("Erro ao confirmar pagamento:", error.message);
     throw error;
+  }
+}
+
+async function confirmarPagamentoMBWAY(paymentIntentId) {
+  try {
+    // Confirmar o pagamento com Stripe
+    const confirmedPayment = await stripe.paymentIntents.confirm(
+      paymentIntentId,
+      {
+        payment_method_data: {
+          type: "mb_way", // Método de pagamento MB WAY
+          billing_details: {
+            phone: "+351935621260", // Substitua pelo número de telefone do cliente
+          },
+        },
+      }
+    );
+
+    // Se o pagamento requer ação (ex: autenticação MB WAY)
+    if (confirmedPayment.status === "requires_action") {
+      console.log("Ação requerida pelo cliente no MB WAY.");
+      // Aqui você poderia chamar um webhook ou processo externo para aguardar a ação
+      const paymentStatus = await chamarWebhookMBWay(paymentIntentId);
+
+      // Verifica o status do pagamento após a ação do cliente
+      if (paymentStatus === "succeeded") {
+        console.log("Pagamento confirmado após ação do cliente no MB WAY.");
+        return {
+          status: "succeeded",
+          message: "Pagamento confirmado via MB WAY.",
+        };
+      } else {
+        throw new Error("Pagamento não confirmado após ação do cliente.");
+      }
+    }
+
+    // Se o pagamento não requer ação, já está confirmado
+    return confirmedPayment;
+  } catch (error) {
+    console.error("Erro ao confirmar pagamento MB WAY:", error.message);
+    throw error; // Propaga o erro
+  }
+}
+
+// Função para chamar o webhook que verifica o status do pagamento MB WAY
+async function chamarWebhookMBWay(paymentIntentId) {
+  try {
+    // Chama seu webhook para verificar o status do pagamento no MB WAY
+    const response = await axios.post(
+      "/payment/webhook",
+      {
+        paymentIntentId: paymentIntentId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json", // O corpo será no formato JSON
+        },
+      }
+    );
+
+    // Verifica se a resposta indica que o pagamento foi bem-sucedido
+    if (response.data.status === "succeeded") {
+      return "succeeded";
+    }
+
+    return "failed";
+  } catch (error) {
+    console.error("Erro ao chamar o webhook MB WAY:", error.message);
+    throw new Error("Erro ao verificar status do pagamento MB WAY.");
   }
 }
 
@@ -325,6 +414,7 @@ const processarPagamento = async (req, res) => {
       paymentMethodId,
       stripeCustomerId,
       restauranteStripeAccountId,
+      paymentType,
     } = req.body;
 
     // Verificar dados obrigatórios
@@ -332,7 +422,8 @@ const processarPagamento = async (req, res) => {
       !totalAmount ||
       !paymentMethodId ||
       !stripeCustomerId ||
-      !restauranteStripeAccountId
+      !restauranteStripeAccountId ||
+      !paymentType
     ) {
       return res.status(400).json({ error: "Dados de pagamento incompletos." });
     }
@@ -340,7 +431,8 @@ const processarPagamento = async (req, res) => {
     // Etapa 1: Criar PaymentIntent
     const paymentIntent = await criarPaymentIntent(
       totalAmount,
-      stripeCustomerId
+      stripeCustomerId,
+      paymentType
     );
     if (!paymentIntent) {
       return res.status(500).json({ error: "Erro ao criar Payment Intent." });
@@ -353,27 +445,75 @@ const processarPagamento = async (req, res) => {
     // }
 
     // Etapa 3: Confirmar Pagamento
-    const confirmedPayment = await confirmarPagamento(
-      paymentIntent.id,
-      paymentMethodId
-    );
-    if (!confirmedPayment || confirmedPayment.status !== "succeeded") {
-      return res.status(400).json({ error: "Pagamento não confirmado." });
+    let confirmedPayment;
+    if (paymentType === "mbway") {
+      // Confirmar pagamento com MB WAY
+      confirmedPayment = await confirmarPagamentoMBWAY(paymentIntent.id);
+      if (confirmedPayment.status !== "succeeded") {
+        return res.status(400).json({
+          error: "Pagamento com MB WAY não confirmado.",
+        });
+      }
+    } else if (paymentType === "card") {
+      // Confirmar pagamento com cartão
+      confirmedPayment = await confirmarPagamento(
+        paymentIntent.id,
+        paymentMethodId
+      );
+      if (!confirmedPayment || confirmedPayment.status !== "succeeded") {
+        return res.status(400).json({ error: "Pagamento não confirmado." });
+      }
     }
 
     // Etapa 4: Realizar transferência para o restaurante
     await realizarTransferencia(confirmedPayment, restauranteStripeAccountId);
 
     console.log("Pagamento processado com sucesso.");
-    return res
-      .status(200)
-      .json({ success: true, message: "Pagamento concluído" });
+    return res.status(200).json({
+      success: true,
+      message: "Pagamento concluído",
+      data: confirmedPayment,
+    });
   } catch (error) {
     console.error("Erro no processo de pagamento:", error.message);
     return res
       .status(500)
       .json({ error: "Erro no processo de pagamento", details: error.message });
   }
+};
+
+const webhook = (req, res) => {
+  const sig = req.headers["stripe-signature"];
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error("Erro ao verificar a assinatura do webhook:", err.message);
+    return res.status(400).send("Webhook signature verification failed.");
+  }
+
+  // Processamento do evento
+  switch (event.type) {
+    case "payment_intent.succeeded":
+      const paymentIntent = event.data.object;
+      console.log("Pagamento confirmado:", paymentIntent.id);
+      // Atualizar status no banco de dados ou outras ações necessárias
+      break;
+
+    case "payment_intent.payment_failed":
+      const failedPaymentIntent = event.data.object;
+      console.log("Pagamento falhou:", failedPaymentIntent.id);
+      // Lidar com a falha de pagamento
+      break;
+
+    default:
+      console.log(`Evento desconhecido: ${event.type}`);
+  }
+
+  // Retornar uma resposta ao Stripe
+  res.status(200).send("Webhook recebido com sucesso");
 };
 
 const associateCardToCustomer = async (req, res) => {

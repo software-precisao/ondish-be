@@ -21,7 +21,6 @@ const gerarNumeroPedido = () => {
   return Math.floor(Math.random() * 90000) + 10000;
 };
 
-
 const obterTodosPedidos = async (req, res) => {
   try {
     const pedidos = await Pedido.findAll({
@@ -86,11 +85,11 @@ const obterTodosPedidos = async (req, res) => {
         },
         {
           model: Usuario,
-          as: "usuario", 
+          as: "usuario",
         },
         {
           model: Usuario,
-          as: "pagante", 
+          as: "pagante",
         },
         {
           model: Restaurante,
@@ -109,7 +108,6 @@ const obterTodosPedidos = async (req, res) => {
     return res.status(500).send({ error: error.message });
   }
 };
-
 
 const obterPedidosPorMesa = async (req, res) => {
   const { id_mesa } = req.params;
@@ -139,14 +137,8 @@ const obterPedidosPorMesa = async (req, res) => {
 
 const criarPedidoComItens = async (req, res) => {
   try {
-    const {
-      id_sala,
-      id_usuario,
-      id_restaurante,
-      id_mesa,
-      valor_total,
-      itens,
-    } = req.body;
+    const { id_sala, id_usuario, id_restaurante, id_mesa, valor_total, itens } =
+      req.body;
 
     await Mesa.update({ id_status_mesa: 2 }, { where: { id_mesa } });
 
@@ -161,11 +153,18 @@ const criarPedidoComItens = async (req, res) => {
       numero_pedido,
       quantidade: itens.reduce((acc, item) => acc + item.quantidade, 0),
       pago: false,
-      status: "Aguardando pagamento", 
+      status: "Pendente",
     });
 
     for (const item of itens) {
-      const { id_prato, id_bebida, id_sobremesa, quantidade, instruction, opcoes } = item;
+      const {
+        id_prato,
+        id_bebida,
+        id_sobremesa,
+        quantidade,
+        instruction,
+        opcoes,
+      } = item;
 
       const novoItem = await ItensPedido.create({
         id_pedido: pedido.id_pedido,
@@ -211,7 +210,6 @@ const criarPedidoComItens = async (req, res) => {
     return res.status(500).send({ error: error.message });
   }
 };
-
 
 const obterStatusPedido = async (req, res) => {
   try {
@@ -365,7 +363,7 @@ const atualizarStatusPedido = async (req, res) => {
 
     if (status === "Pago" || status === "Cancelado") {
       await Mesa.update(
-        { id_status_mesa: 1 }, 
+        { id_status_mesa: 1 },
         { where: { id_mesa: pedido.id_mesa } }
       );
     }
@@ -387,7 +385,6 @@ const atualizarStatusPedido = async (req, res) => {
     return res.status(500).send({ error: error.message });
   }
 };
-
 
 const obterPedidoPorUsuarioMesa = async (req, res) => {
   try {

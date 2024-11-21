@@ -120,6 +120,7 @@ const rotaInfo = require("./src/routes/info");
 const rotaGarcom = require("./src/routes/garcom");
 const rotaPreferenciaUser = require("./src/routes/preferenciasUser");
 const rotaPromocao = require("./src/routes/promocao");
+const rotaMotivoVisita = require("./src/routes/motivoVisita")
 
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -198,6 +199,8 @@ app.use("/info", rotaInfo);
 app.use("/chamar-garcom", rotaGarcom);
 app.use("/preferencias-usuario", rotaPreferenciaUser);
 app.use("/promocoes", rotaPromocao);
+app.use("/motivo-visita", rotaMotivoVisita);
+
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 

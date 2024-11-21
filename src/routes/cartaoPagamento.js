@@ -6,7 +6,7 @@ const metodoPagamentoController = require("../controller/cartaoPagamento");
 router.post("/cadastrar", metodoPagamentoController.criarMetodoPagamento);
 router.get("/:id_user", metodoPagamentoController.getMetodoPagamentoByUserId);
 router.delete(
-  "/deletar/:id_user",
+  "/deletar/:id_metodo_pagamento",
   metodoPagamentoController.deleteMetodoPagamento
 );
 

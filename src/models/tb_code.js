@@ -20,7 +20,7 @@ const Code = conn.define(
         type: DataTypes.STRING,
         allowNull: true,
         validate: {
-          is: /^[0-9]{4}$/,
+          is: /^[0-9]{6}$/, 
         }
       },
     id_user: {

@@ -4,8 +4,9 @@ const jwt = require("jsonwebtoken");
 const Usuario = require("../models/tb_usuarios");
 const Logado = require("../models/tb_logout");
 const Restaurante = require("../models/tb_restaurante");
-const Sala  = require("../models/tb_sala");
+const Sala = require("../models/tb_sala");
 const SalaConvidado = require("../models/tb_sala_convidado");
+const { sendPushNotification } = require("../utils/pushNotification");
 
 const autenticarUsuarioApp = async (req, res, next) => {
   try {
@@ -69,6 +70,12 @@ const autenticarUsuarioApp = async (req, res, next) => {
         status: 1,
       });
 
+      sendPushNotification(
+        "ExponentPushToken[kfXubkCODf91NbVSzguK0l]",
+        "Olá!",
+        "Esta é uma notificação sem imagem."
+      );
+
       return res.status(200).send({
         mensagem: "Autenticado com sucesso!",
         token: token,
@@ -99,11 +106,14 @@ const autenticarUsuarioRestaurante = async (req, res, next) => {
 
     const isPasswordValid = await bcrypt.compare(senha, user.senha);
     if (isPasswordValid) {
-     
-      await Logado.update({ status: 0 }, { where: { id_user: user.id_user, status: 1 } });
-      const restaurante = await Restaurante.findOne({ where: { id_user: user.id_user } });
+      await Logado.update(
+        { status: 0 },
+        { where: { id_user: user.id_user, status: 1 } }
+      );
+      const restaurante = await Restaurante.findOne({
+        where: { id_user: user.id_user },
+      });
 
-   
       const token = jwt.sign(
         {
           id_user: user.id_user,
@@ -114,22 +124,24 @@ const autenticarUsuarioRestaurante = async (req, res, next) => {
           id_nivel: user.id_nivel,
           id_status: user.id_status,
           config: user.config,
-          restaurante: restaurante ? {
-            id_restaurante: restaurante.id_restaurante,
-            nome_restaurante: restaurante.nome_restaurante,
-            nif: restaurante.nif,
-            ibam: restaurante.ibam,
-            website: restaurante.website,
-            facebook: restaurante.facebook,
-            logo: restaurante.logo,
-            capa: restaurante.capa,
-            instagram: restaurante.instagram,
-            telefone1: restaurante.telefone1,
-            telefone2: restaurante.telefone2,
-            morada: restaurante.morada,
-            codigo_postal: restaurante.codigo_postal,
-            qrcode: restaurante.qrcode,
-          } : null
+          restaurante: restaurante
+            ? {
+                id_restaurante: restaurante.id_restaurante,
+                nome_restaurante: restaurante.nome_restaurante,
+                nif: restaurante.nif,
+                ibam: restaurante.ibam,
+                website: restaurante.website,
+                facebook: restaurante.facebook,
+                logo: restaurante.logo,
+                capa: restaurante.capa,
+                instagram: restaurante.instagram,
+                telefone1: restaurante.telefone1,
+                telefone2: restaurante.telefone2,
+                morada: restaurante.morada,
+                codigo_postal: restaurante.codigo_postal,
+                qrcode: restaurante.qrcode,
+              }
+            : null,
         },
         process.env.JWT_KEY,
         { expiresIn: "6h" }
@@ -145,7 +157,7 @@ const autenticarUsuarioRestaurante = async (req, res, next) => {
         mensagem: "Autenticado com sucesso!",
         token: token,
         id_status: user.id_status,
-        id_nivel: user.id_nivel
+        id_nivel: user.id_nivel,
       });
     } else {
       return res.status(401).send({ mensagem: "Falha na autenticação." });

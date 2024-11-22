@@ -552,57 +552,14 @@ const getUsuariosComToken = async () => {
   }
 };
 
-// const enviarNotificacoes = async (titulo, mensagem) => {
-//   try {
-//     const usuarios = await getUsuariosComToken();
-
-//     for (const usuario of usuarios) {
-//       const token = usuario.notification_token;
-
-//       await sendPushNotification(
-//         token,
-//         titulo,
-//         mensagem,
-//         null 
-//       );
-//     }
-
-//     console.log(`Notificações enviadas: ${usuarios.length}`);
-//   } catch (error) {
-//     console.error("Erro ao enviar notificações:", error.message);
-//   }
-// };
-
-const isHorarioPortugal = (hora, minuto) => {
-  const now = moment().tz("Europe/Lisbon");
-  return now.hour() === hora && now.minute() === minuto;
-};
-
-cron.schedule("* * * * *", () => {
-  if (isHorarioPortugal(12, 30)) {
-    console.log("Enviando notificações de almoço (Portugal)...");
-    enviarNotificacoes("Hora do almoço!", "Que tal pedir um almoço?");
-  }
-
-  if (isHorarioPortugal(20, 30)) {
-    console.log("Enviando notificações de jantar (Portugal)...");
-    enviarNotificacoes("Hora do jantar!", "Que tal pedir uma janta?");
-  }
-});
-
 const enviarNotificacoes = async (titulo, mensagem) => {
   try {
-    const usuarios = await getUsuariosComToken(); // Função que obtém os usuários com tokens de notificação
+    const usuarios = await getUsuariosComToken();
 
     for (const usuario of usuarios) {
-      const token = usuario.token_notification;
+      const token = usuario.notification_token;
 
-      await sendPushNotification(
-        token,
-        titulo,
-        mensagem,
-        null // Caso queira adicionar uma imagem, substitua "null" pelo URL
-      );
+      await sendPushNotification(token, titulo, mensagem, null);
     }
 
     console.log(`Notificações enviadas: ${usuarios.length}`);
@@ -611,13 +568,89 @@ const enviarNotificacoes = async (titulo, mensagem) => {
   }
 };
 
-// Agendar a execução a cada 1 minuto
-cron.schedule("* * * * *", () => {
-  console.log("Enviando notificação a cada minuto...");
+const isHorarioPortugal = (hora, minuto) => {
+  const now = moment().tz("Europe/Lisbon");
+  return now.hour() === hora && now.minute() === minuto;
+};
 
-  // Enviar uma notificação genérica ou personalizada
-  enviarNotificacoes("Notificação de 1 minuto", "Isso é uma notificação enviada a cada minuto.");
+cron.schedule("* * * * *", () => {
+  if (isHorarioPortugal(22, 30)) {
+    console.log("Enviando notificações de almoço (Portugal)...");
+    enviarNotificacoes(
+      "Hora do almoço! teste biblioteca servidor portugal",
+      "Que tal pedir um almoço?"
+    );
+  }
+
+  if (isHorarioPortugal(20, 30)) {
+    console.log("Enviando notificações de jantar (Portugal)...");
+    enviarNotificacoes(
+      "Hora do jantar! teste biblioteca servidor portugal",
+      "Que tal pedir uma janta?"
+    );
+  }
 });
+
+const enviarNotificacoesNormal = async (titulo, mensagem) => {
+  try {
+    const usuarios = await getUsuariosComToken();
+
+    for (const usuario of usuarios) {
+      const token = usuario.token_notification;
+
+      await sendPushNotification(token, titulo, mensagem, null);
+    }
+
+    console.log(`Notificações enviadas: ${usuarios.length}`);
+  } catch (error) {
+    console.error("Erro ao enviar notificações:", error.message);
+  }
+};
+
+const calcularProximoEnvio = (hora, minuto) => {
+  const now = moment().tz("Europe/Lisbon");
+  const proximoEnvio = moment()
+    .tz("Europe/Lisbon")
+    .set({ hour: hora, minute: minuto, second: 0, millisecond: 0 });
+
+  if (now.isAfter(proximoEnvio)) {
+    proximoEnvio.add(1, "days");
+  }
+};
+
+const agendarNotificacoes = () => {
+  const tempoAlmoco = calcularProximoEnvio(12, 30);
+
+  setTimeout(() => {
+    enviarNotificacoesNormal(
+      "Hora do almoço teste normal!",
+      "Que tal pedir um almoço?"
+    );
+    setInterval(() => {
+      enviarNotificacoesNormal(
+        "Hora do almoço teste normal!",
+        "Que tal pedir um almoço?"
+      );
+    }, 24 * 60 * 60 * 1000);
+  }, tempoAlmoco);
+
+  const tempoJantar = calcularProximoEnvio(22, 30);
+
+  setTimeout(() => {
+    enviarNotificacoesNormal(
+      "Hora do jantar teste normal!",
+      "Que tal pedir uma janta?"
+    );
+    setInterval(() => {
+      enviarNotificacoesNormal(
+        "Hora do jantar teste normal!",
+        "Que tal pedir uma janta?"
+      );
+    }, 24 * 60 * 60 * 1000);
+  }, tempoJantar);
+};
+
+agendarNotificacoes();
 
 module.exports = {
   criarUsuarioRestaurante,

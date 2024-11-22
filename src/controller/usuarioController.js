@@ -15,6 +15,8 @@ const path = require("path");
 const { Sequelize } = require("sequelize");
 const fs = require("fs").promises;
 require("dotenv").config();
+const cron = require("node-cron");
+const moment = require("moment-timezone");
 
 const enviarEmail = async (
   destinatario,
@@ -58,7 +60,6 @@ const enviarEmail = async (
     return false;
   }
 };
-
 
 const registrarNumeroTelefone = async (req, res) => {
   try {
@@ -538,6 +539,85 @@ const trocaSenhaporEmail = async (req, res, next) => {
     return res.status(500).send({ error: error.message });
   }
 };
+
+const getUsuariosComToken = async () => {
+  try {
+    return await Usuario.findAll({
+      where: { token_notification: { [Sequelize.Op.not]: null } },
+      attributes: ["token_notification"],
+    });
+  } catch (error) {
+    console.error("Erro ao buscar usuários com token:", error.message);
+    return [];
+  }
+};
+
+// const enviarNotificacoes = async (titulo, mensagem) => {
+//   try {
+//     const usuarios = await getUsuariosComToken();
+
+//     for (const usuario of usuarios) {
+//       const token = usuario.notification_token;
+
+//       await sendPushNotification(
+//         token,
+//         titulo,
+//         mensagem,
+//         null 
+//       );
+//     }
+
+//     console.log(`Notificações enviadas: ${usuarios.length}`);
+//   } catch (error) {
+//     console.error("Erro ao enviar notificações:", error.message);
+//   }
+// };
+
+const isHorarioPortugal = (hora, minuto) => {
+  const now = moment().tz("Europe/Lisbon");
+  return now.hour() === hora && now.minute() === minuto;
+};
+
+cron.schedule("* * * * *", () => {
+  if (isHorarioPortugal(12, 30)) {
+    console.log("Enviando notificações de almoço (Portugal)...");
+    enviarNotificacoes("Hora do almoço!", "Que tal pedir um almoço?");
+  }
+
+  if (isHorarioPortugal(20, 30)) {
+    console.log("Enviando notificações de jantar (Portugal)...");
+    enviarNotificacoes("Hora do jantar!", "Que tal pedir uma janta?");
+  }
+});
+
+const enviarNotificacoes = async (titulo, mensagem) => {
+  try {
+    const usuarios = await getUsuariosComToken(); // Função que obtém os usuários com tokens de notificação
+
+    for (const usuario of usuarios) {
+      const token = usuario.token_notification;
+
+      await sendPushNotification(
+        token,
+        titulo,
+        mensagem,
+        null // Caso queira adicionar uma imagem, substitua "null" pelo URL
+      );
+    }
+
+    console.log(`Notificações enviadas: ${usuarios.length}`);
+  } catch (error) {
+    console.error("Erro ao enviar notificações:", error.message);
+  }
+};
+
+// Agendar a execução a cada 1 minuto
+cron.schedule("* * * * *", () => {
+  console.log("Enviando notificação a cada minuto...");
+
+  // Enviar uma notificação genérica ou personalizada
+  enviarNotificacoes("Notificação de 1 minuto", "Isso é uma notificação enviada a cada minuto.");
+});
 
 module.exports = {
   criarUsuarioRestaurante,

@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
 const PreferenciasUsuario = require("../models/tb_preferencias_user");
 const { sendPushNotification } = require("../utils/pushNotification");
-// const { sendSms } = require('../utils/smsToken')
+const { sendSms } = require("../utils/smsToken");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const nodemailer = require("nodemailer");
@@ -59,6 +59,7 @@ const enviarEmail = async (
   }
 };
 
+
 const registrarNumeroTelefone = async (req, res) => {
   try {
     const { numero_telefone, id_nivel, id_status } = req.body;
@@ -72,77 +73,38 @@ const registrarNumeroTelefone = async (req, res) => {
         .send({ mensagem: "Número de telefone já cadastrado." });
     }
 
+    const smsResponse = await sendSms(numero_telefone, "Código de verificação");
+
+    if (!smsResponse || !smsResponse.code) {
+      return res
+        .status(500)
+        .send({ error: "Falha ao enviar SMS de verificação." });
+    }
+
     const novoUsuario = await Usuario.create({
-      numero_telefone: numero_telefone,
-      id_nivel: 3,
-      id_status: 1,
+      numero_telefone,
+      id_nivel: id_nivel || 3,
+      id_status: id_status || 1,
     });
 
-    const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
-
-    const code = await Code.create({
+    await Code.create({
       type_code: 1,
-      code: codigoAleatorio,
+      code: smsResponse.code,
       id_user: novoUsuario.id_user,
     });
 
     return res.status(201).send({
-      mensagem: "Número de telefone registrado com sucesso.",
+      mensagem:
+        "Número de telefone registrado com sucesso. Verifique o SMS enviado para concluir o cadastro.",
       id_user: novoUsuario.id_user,
-      code: code,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).send({ error: error.message });
+    console.error("Erro ao registrar número de telefone:", error.message);
+    return res
+      .status(500)
+      .send({ error: "Erro interno ao registrar número de telefone." });
   }
 };
-
-//CÓDIGO COM O ENVIO DE SMS, TEM QUE CORRIGIR QUANDO CONSEGUIR AS CHAVES
-// const registrarNumeroTelefone = async (req, res) => {
-//   try {
-//     const { numero_telefone, id_nivel, id_status } = req.body;
-
-//     const usuarioExistente = await Usuario.findOne({
-//       where: { numero_telefone },
-//     });
-//     if (usuarioExistente) {
-//       return res
-//         .status(400)
-//         .send({ mensagem: "Número de telefone já cadastrado." });
-//     }
-
-//     const smsResponse = await sendSms(numero_telefone, "Código de verificação");
-
-//     if (!smsResponse || !smsResponse.code) {
-//       return res
-//         .status(500)
-//         .send({ error: "Falha ao enviar SMS de verificação." });
-//     }
-
-//     const novoUsuario = await Usuario.create({
-//       numero_telefone,
-//       id_nivel: id_nivel || 3,
-//       id_status: id_status || 1,
-//     });
-
-//     await Code.create({
-//       type_code: 1,
-//       code: smsResponse.code,
-//       id_user: novoUsuario.id_user,
-//     });
-
-//     return res.status(201).send({
-//       mensagem:
-//         "Número de telefone registrado com sucesso. Verifique o SMS enviado para concluir o cadastro.",
-//       id_user: novoUsuario.id_user,
-//     });
-//   } catch (error) {
-//     console.error("Erro ao registrar número de telefone:", error.message);
-//     return res
-//       .status(500)
-//       .send({ error: "Erro interno ao registrar número de telefone." });
-//   }
-// };
 
 const concluirRegistro = async (req, res) => {
   try {
@@ -372,10 +334,19 @@ const recuperarSenha = async (req, res, next) => {
 
     const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
 
+    const smsResponse = await sendSms(numero_telefone, "Código de verificação");
+
+    if (!smsResponse || !smsResponse.code) {
+      return res
+        .status(500)
+        .send({ error: "Falha ao enviar SMS de verificação." });
+    }
+
     const code = await Code.create({
       type_code: 2,
       code: codigoAleatorio,
       id_user: usuarioExistente.id_user,
+      code: smsResponse.code,
     });
 
     return res.status(200).send({

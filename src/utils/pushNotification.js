@@ -8,8 +8,11 @@ const sendPushNotification = async (expoToken, title, body, image) => {
       title: title,
       body: body,
       data: { withSome: "data" },
-      image: image,
     };
+
+    if (image) {
+      message.image = image;
+    }
 
     const response = await axios.post(
       "https://exp.host/--/api/v2/push/send",

@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require("uuid");
 const { Op } = require("sequelize");
 const PreferenciasUsuario = require("../models/tb_preferencias_user");
 const { sendPushNotification } = require("../utils/pushNotification");
-const { sendSms } = require("../utils/smsToken");
+const { sendSms } = require("../utils/smsTwilloHelper");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const nodemailer = require("nodemailer");
@@ -74,9 +74,15 @@ const registrarNumeroTelefone = async (req, res) => {
         .send({ mensagem: "Número de telefone já cadastrado." });
     }
 
-    const smsResponse = await sendSms(numero_telefone, "Código de verificação");
+    const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
 
-    if (!smsResponse || !smsResponse.code) {
+    const smsResponse = await sendSms(
+      numero_telefone,
+      `Código de verificação é: ${codigoAleatorio}`
+    );
+    // console.log(smsResponse);
+
+    if (!smsResponse || !smsResponse.status) {
       return res
         .status(500)
         .send({ error: "Falha ao enviar SMS de verificação." });
@@ -90,7 +96,7 @@ const registrarNumeroTelefone = async (req, res) => {
 
     await Code.create({
       type_code: 1,
-      code: smsResponse.code,
+      code: codigoAleatorio,
       id_user: novoUsuario.id_user,
     });
 
@@ -335,19 +341,22 @@ const recuperarSenha = async (req, res, next) => {
 
     const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
 
-    const smsResponse = await sendSms(numero_telefone, "Código de verificação");
+    const smsResponse = await sendSms(
+      numero_telefone,
+      `Código de verificação é: ${codigoAleatorio}`
+    );
 
-    if (!smsResponse || !smsResponse.code) {
+    if (!smsResponse || !smsResponse.status) {
       return res
         .status(500)
         .send({ error: "Falha ao enviar SMS de verificação." });
     }
 
-    const code = await Code.create({
+    await Code.create({
       type_code: 2,
       code: codigoAleatorio,
       id_user: usuarioExistente.id_user,
-      code: smsResponse.code,
+      // code: smsResponse.code,
     });
 
     return res.status(200).send({

@@ -94,7 +94,7 @@ const registrarNumeroTelefone = async (req, res) => {
       id_status: id_status || 1,
     });
 
-    await Code.create({
+    const code = await Code.create({
       type_code: 1,
       code: codigoAleatorio,
       id_user: novoUsuario.id_user,
@@ -352,7 +352,7 @@ const recuperarSenha = async (req, res, next) => {
         .send({ error: "Falha ao enviar SMS de verificação." });
     }
 
-    await Code.create({
+    const code = await Code.create({
       type_code: 2,
       code: codigoAleatorio,
       id_user: usuarioExistente.id_user,

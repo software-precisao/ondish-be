@@ -203,8 +203,8 @@ const restauranteController = {
 
       const accountLink = await stripe.accountLinks.create({
         account: stripeAccount.id,
-        refresh_url: "http://localhost:5173/my-dashboard",
-        return_url: "http://localhost:5173/my-dashboard",
+        refresh_url: "https://app.ondishfoods.pt//my-dashboard",
+        return_url: "https://app.ondishfoods.pt//my-dashboard",
         type: "account_onboarding",
       });
 

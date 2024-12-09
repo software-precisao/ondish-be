@@ -2,7 +2,6 @@ const LatLong = require('../models/tb_lat_long');
 const Usuario = require('../models/tb_usuarios');
 
 const latLongController = {
-  
   buscarTodasCoordenadas: async (req, res) => {
     try {
       const coordenadas = await LatLong.findAll({
@@ -50,9 +49,28 @@ const latLongController = {
     }
   },
 
+  atualizarStatus: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const atualizado = await LatLong.update(
+        { status },
+        { where: { id_lat_long: id } }
+      );
+      if (atualizado[0]) {
+        return res.status(200).send({ mensagem: "Status atualizado com sucesso" });
+      } else {
+        return res.status(404).send({ mensagem: "Coordenada não encontrada" });
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar status: ", error);
+      return res.status(500).send({ mensagem: "Erro ao atualizar status", error: error.message });
+    }
+  },
+
   adicionarCoordenadas: async (req, res) => {
     try {
-      const { id_user, cep, endereco, latitude, longitude, andar, numero_porta, localizacao, descricao} = req.body;
+      const { id_user, cep, endereco, latitude, longitude, andar, numero_porta, localizacao, descricao } = req.body;
       const novaCoordenada = await LatLong.create({
         id_user,
         cep,
@@ -88,3 +106,4 @@ const latLongController = {
 };
 
 module.exports = latLongController;
+

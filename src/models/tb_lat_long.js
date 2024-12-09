@@ -1,9 +1,7 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const conn = require("../../data/conn");
 
-
 const Usuario = require("./tb_usuarios");
-const Restaurante = require("./tb_restaurante");
 
 const LatLong = conn.define(
   "tb_lat_long",
@@ -49,6 +47,11 @@ const LatLong = conn.define(
     descricao: {
       type: DataTypes.TEXT,
       allowNull: true,
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
     },
   },
   { freezeTableName: true }

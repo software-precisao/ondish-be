@@ -21,7 +21,8 @@ const FotoSobremesas = require("./src/models/tb_foto_sobremesas");
 const Sala = require("./src/models/tb_sala");
 const SalaConvidado = require("./src/models/tb_sala_convidado");
 const Pedido = require("./src/models/tb_pedido");
-
+const Mesa = require("./src/models/tb_mesa");
+const ChamadoGarcom = require("./src/models/tb_garcom");
 
 Restaurante.hasMany(Pratos, {
   foreignKey: "id_restaurante",
@@ -83,10 +84,14 @@ SalaConvidado.belongsTo(Sala, {
   as: "salas",
 });
 
-
 Restaurante.hasMany(Pedido, {
   foreignKey: "id_restaurante",
   as: "pedidos",
+});
+
+Mesa.hasMany(ChamadoGarcom, {
+  foreignKey: "id_mesa",
+  as: "chamada_garcom",
 });
 
 // Rotas
@@ -120,9 +125,8 @@ const rotaInfo = require("./src/routes/info");
 const rotaGarcom = require("./src/routes/garcom");
 const rotaPreferenciaUser = require("./src/routes/preferenciasUser");
 const rotaPromocao = require("./src/routes/promocao");
-const rotaMotivoVisita = require("./src/routes/motivoVisita")
-const rotaChave = require("./src/routes/chave")
-
+const rotaMotivoVisita = require("./src/routes/motivoVisita");
+const rotaChave = require("./src/routes/chave");
 
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -202,8 +206,7 @@ app.use("/chamar-garcom", rotaGarcom);
 app.use("/preferencias-usuario", rotaPreferenciaUser);
 app.use("/promocoes", rotaPromocao);
 app.use("/motivo-visita", rotaMotivoVisita);
-app.use("/chave", rotaChave)
-
+app.use("/chave", rotaChave);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 

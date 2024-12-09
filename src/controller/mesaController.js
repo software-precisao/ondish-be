@@ -3,10 +3,21 @@ const Restaurante = require("../models/tb_restaurante");
 const StatusMesa = require("../models/tb_status_mesa");
 const QRCode = require("qrcode");
 const Qrcode = require("../models/tb_qrcode");
+const ChamadoGarcom = require("../models/tb_garcom");
 
 const criarMesa = async (req, res) => {
   const { numero, capacidade, id_restaurante, localizacao } = req.body;
   try {
+    const mesaExistente = await Mesa.findOne({
+      where: { numero, id_restaurante },
+    });
+
+    if (mesaExistente) {
+      return res.status(400).json({
+        error: "Já existe uma mesa com esse número neste restaurante.",
+      });
+    }
+
     const novaMesa = await Mesa.create({
       numero,
       capacidade,
@@ -73,6 +84,14 @@ const obterMesasPorRestaurante = async (req, res) => {
       include: [
         { model: Restaurante, as: "restaurante" },
         { model: StatusMesa, as: "status_mesa" },
+        {
+          model: ChamadoGarcom,
+          as: "chamada_garcom",
+          where: {
+            status: "Pendente",
+          },
+          required: false,
+        },
       ],
     });
     if (mesas.length > 0) {
@@ -123,7 +142,6 @@ const deletarMesa = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
-
 
 module.exports = {
   criarMesa,

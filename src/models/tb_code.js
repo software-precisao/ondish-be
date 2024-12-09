@@ -1,7 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const conn = require("../../data/conn");
 
-
 const Usuario = require("./tb_usuarios");
 
 const Code = conn.define(
@@ -17,12 +16,9 @@ const Code = conn.define(
       allowNull: false,
     },
     code: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        validate: {
-          is: /^[0-9]{6}$/, 
-        }
-      },
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     id_user: {
       type: DataTypes.INTEGER,
       allowNull: false,

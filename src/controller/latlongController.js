@@ -123,8 +123,8 @@ const latLongController = {
         numero_porta,
         localizacao,
         descricao,
+        status,
       } = req.body;
-      const status = 0;
       const novaCoordenada = await LatLong.create({
         id_user,
         cep,

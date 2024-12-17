@@ -112,6 +112,67 @@ const restauranteController = {
         });
       }
 
+      const id_user = req.body.id_user;
+      const usuario = await Usuario.findByPk(id_user);
+      if (!usuario) {
+        return res.status(404).send({ mensagem: "Usuário não encontrado!" });
+      }
+
+      if (usuario.config !== 2) {
+        return res
+          .status(400)
+          .send({ mensagem: "A configuração do usuário não é 2!" });
+      }
+
+      if (usuario.config !== 1) {
+        usuario.config = 1;
+        await usuario.save();
+      }
+
+      let stripeAccount;
+
+      stripeAccount = await stripe.accounts.create({
+        type: "custom",
+        country: "PT",
+        email: usuario.email,
+        business_type: "individual",
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        business_profile: {
+          name: req.body.nome_restaurante,
+          mcc: req.body.mcc,
+          url: req.body.facebook,
+        },
+        individual: {
+          first_name: usuario.nome,
+          last_name: usuario.sobrenome,
+          email: usuario.email,
+          phone: usuario.numero_telefone,
+          dob: {
+            day: usuario.data_nascimento.split("-")[2],
+            month: usuario.data_nascimento.split("-")[1],
+            year: usuario.data_nascimento.split("-")[0],
+          },
+          address: {
+            line1: usuario.logradouro,
+            city: usuario.cidade,
+            postal_code: usuario.cep,
+            country: "PT",
+          },
+          id_number: usuario.nif,
+        },
+        external_account: {
+          object: "bank_account",
+          country: "PT",
+          currency: "EUR",
+          account_holder_name: req.body.nome_restaurante,
+          account_holder_type: "company",
+          account_number: req.body.ibam,
+        },
+      });
+
       const novoRestaurante = await Restaurante.create({
         nif: req.body.nif,
         nome_restaurante: req.body.nome_restaurante,
@@ -133,73 +194,73 @@ const restauranteController = {
       const qrCodeURL = await QRCode.toDataURL(qrData);
       await novoRestaurante.update({ qrcode: qrCodeURL });
 
-      const id_user = req.body.id_user;
-      const usuario = await Usuario.findByPk(id_user);
-      if (!usuario) {
-        return res.status(404).send({ mensagem: "Usuário não encontrado!" });
-      }
+      // const id_user = req.body.id_user;
+      // const usuario = await Usuario.findByPk(id_user);
+      // if (!usuario) {
+      //   return res.status(404).send({ mensagem: "Usuário não encontrado!" });
+      // }
 
-      if (usuario.config !== 2) {
-        return res
-          .status(400)
-          .send({ mensagem: "A configuração do usuário não é 2!" });
-      }
+      // if (usuario.config !== 2) {
+      //   return res
+      //     .status(400)
+      //     .send({ mensagem: "A configuração do usuário não é 2!" });
+      // }
 
-      if (usuario.config !== 1) {
-        usuario.config = 1;
-        await usuario.save();
-      }
+      // if (usuario.config !== 1) {
+      //   usuario.config = 1;
+      //   await usuario.save();
+      // }
 
-      let stripeAccount;
-      if (novoRestaurante.stripe_account_id) {
-        stripeAccount = await stripe.accounts.retrieve(
-          novoRestaurante.stripe_account_id
-        );
-      } else {
-        stripeAccount = await stripe.accounts.create({
-          type: "custom",
-          country: "PT",
-          email: usuario.email,
-          business_type: "individual",
-          capabilities: {
-            card_payments: { requested: true },
-            transfers: { requested: true },
-          },
-          business_profile: {
-            name: novoRestaurante.nome_restaurante,
-            mcc: novoRestaurante.mcc,
-            url: novoRestaurante.facebook,
-          },
-          individual: {
-            first_name: usuario.nome,
-            last_name: usuario.sobrenome,
-            email: usuario.email,
-            phone: usuario.numero_telefone,
-            dob: {
-              day: usuario.data_nascimento.split("-")[2],
-              month: usuario.data_nascimento.split("-")[1],
-              year: usuario.data_nascimento.split("-")[0],
-            },
-            address: {
-              line1: usuario.logradouro,
-              city: usuario.cidade,
-              postal_code: usuario.cep,
-              country: "PT",
-            },
-            id_number: usuario.nif,
-          },
-          external_account: {
-            object: "bank_account",
-            country: "PT",
-            currency: "EUR",
-            account_holder_name: novoRestaurante.nome_restaurante,
-            account_holder_type: "company",
-            account_number: novoRestaurante.ibam,
-          },
-        });
+      // let stripeAccount;
+      // if (novoRestaurante.stripe_account_id) {
+      //   stripeAccount = await stripe.accounts.retrieve(
+      //     novoRestaurante.stripe_account_id
+      //   );
+      // } else {
+      //   stripeAccount = await stripe.accounts.create({
+      //     type: "custom",
+      //     country: "PT",
+      //     email: usuario.email,
+      //     business_type: "individual",
+      //     capabilities: {
+      //       card_payments: { requested: true },
+      //       transfers: { requested: true },
+      //     },
+      //     business_profile: {
+      //       name: novoRestaurante.nome_restaurante,
+      //       mcc: novoRestaurante.mcc,
+      //       url: novoRestaurante.facebook,
+      //     },
+      //     individual: {
+      //       first_name: usuario.nome,
+      //       last_name: usuario.sobrenome,
+      //       email: usuario.email,
+      //       phone: usuario.numero_telefone,
+      //       dob: {
+      //         day: usuario.data_nascimento.split("-")[2],
+      //         month: usuario.data_nascimento.split("-")[1],
+      //         year: usuario.data_nascimento.split("-")[0],
+      //       },
+      //       address: {
+      //         line1: usuario.logradouro,
+      //         city: usuario.cidade,
+      //         postal_code: usuario.cep,
+      //         country: "PT",
+      //       },
+      //       id_number: usuario.nif,
+      //     },
+      //     external_account: {
+      //       object: "bank_account",
+      //       country: "PT",
+      //       currency: "EUR",
+      //       account_holder_name: novoRestaurante.nome_restaurante,
+      //       account_holder_type: "company",
+      //       account_number: novoRestaurante.ibam,
+      //     },
+      //   });
 
-        await novoRestaurante.update({ stripe_account_id: stripeAccount.id });
-      }
+      await novoRestaurante.update({ stripe_account_id: stripeAccount.id });
+      // }
 
       const accountLink = await stripe.accountLinks.create({
         account: stripeAccount.id,

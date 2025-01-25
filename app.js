@@ -135,44 +135,24 @@ app.use(cors());
 
 app.use("/public", express.static("public"));
 
-
-const corsOptions = {
-  origin: "https://ondishfoods.pt",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: [
-    "Origin",
-    "X-Api-Key",
-    "X-Requested-With",
-    "Content-Type",
-    "Accept",
-    "Authorization",
-  ],
-  credentials: true, // Permite cookies e credenciais, se necessário
-};
-
-app.use(cors(corsOptions));
-
-// Handler específico para OPTIONS (Preflight)
-app.options("*", cors(corsOptions));
-
 // Configurações de CORS
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Credentials", "true");
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "Origin, X-Api-Key, X-Requested-With, Content-Type, Accept, Authorization"
-//   );
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Api-Key, X-Requested-With, Content-Type, Accept, Authorization"
+  );
 
-//   if (req.method === "OPTIONS") {
-//     res.header(
-//       "Access-Control-Allow-Methods",
-//       "PUT, POST, PATCH, DELETE, GET, OPTIONS"
-//     );
-//     return res.status(200).send({});
-//   }
-//   next();
-// });
+  if (req.method === "OPTIONS") {
+    res.header(
+      "Access-Control-Allow-Methods",
+      "PUT, POST, PATCH, DELETE, GET, OPTIONS"
+    );
+    return res.status(200).send({});
+  }
+  next();
+});
 
 const syncModels = async () => {
   try {

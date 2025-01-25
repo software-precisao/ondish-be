@@ -261,6 +261,7 @@ const criarUsuarioRestaurante = async (req, res, next) => {
       nif: req.body.nif,
       data_nascimento: req.body.data_nascimento,
       logradouro: req.body.logradouro,
+      numero_morada: req.body.numero_morada,
       cidade: req.body.cidade,
       estado: req.body.estado,
       cep: req.body.cep,

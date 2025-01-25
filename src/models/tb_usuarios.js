@@ -72,6 +72,10 @@ const Usuario = conn.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    numeo_morada: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     cidade: {
       type: DataTypes.STRING,
       allowNull: true,

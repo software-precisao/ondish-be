@@ -55,6 +55,10 @@ const Restaurante = conn.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    numero_morada: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     codigo_postal: {
       type: DataTypes.STRING,
       allowNull: false,

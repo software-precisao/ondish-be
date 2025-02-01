@@ -240,32 +240,16 @@ const criarUsuarioRestaurante = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(req.body.senha, 10);
-    const filename = req.files.avatar
-      ? req.files.avatar[0].filename
-      : "default-avatar.png";
-
-    const documentoIdentidade = req.files.documento
-      ? req.files.documento[0].filename
-      : "default-documento.png";
-
+   
     const novoUsuario = await Usuario.create({
       nome: req.body.nome,
       sobrenome: req.body.sobrenome,
       email: req.body.email,
-      numero_telefone: req.body.numero_telefone,
       senha: hashedPassword,
+      data_nascimento: "10-10-1990",
       id_nivel: 2,
       id_status: 1,
-      avatar: `/avatar/${filename}`,
       config: 2,
-      nif: req.body.nif,
-      data_nascimento: req.body.data_nascimento,
-      logradouro: req.body.logradouro,
-      numero_morada: req.body.numero_morada,
-      cidade: req.body.cidade,
-      estado: req.body.estado,
-      cep: req.body.cep,
-      imagem_documento_identidade: `/documento/${documentoIdentidade}`,
     });
 
     const tokenUsuario = await Token.create({
@@ -401,6 +385,26 @@ const obterUsuarios = async (req, res, next) => {
   try {
     const usuarios = await Usuario.findAll();
     return res.status(200).send({ response: usuarios });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
+};
+
+const obterUsuarioPorTelefone = async (req, res, next) => {
+  const { numero_telefone } = req.query;
+
+  try {
+    // Busca na base de dados por número de telefone
+    const usuario = await Usuario.findOne({
+      where: { numero_telefone },
+    });
+
+    // Verifica se o usuário foi encontrado
+    if (!usuario) {
+      return res.status(404).send({ message: "Número de telefone não encontrado." });
+    }
+
+    return res.status(200).send({ response: usuario });
   } catch (error) {
     return res.status(500).send({ error: error.message });
   }
@@ -667,6 +671,7 @@ module.exports = {
   recuperarSenha,
   verificarCodigo,
   obterUsuarios,
+  obterUsuarioPorTelefone,
   obterUsuarioPorId,
   atualizarUsuario,
   atualizarSenhaUsuario,

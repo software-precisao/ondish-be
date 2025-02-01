@@ -185,6 +185,7 @@ const restauranteController = {
         telefone1: req.body.telefone1,
         telefone2: req.body.telefone2,
         morada: req.body.morada,
+        numero_morada: req.body.numero_morada,
         codigo_postal: req.body.codigo_postal,
         id_user: req.body.id_user,
         mcc: req.body.mcc,

@@ -94,7 +94,7 @@ const {uploadFields} = require('../helpers/img-uploader');
  *       500:
  *         description: Erro interno do servidor
  */
-router.post('/cadastrar/restaurante', uploadFields, usuarioController.criarUsuarioRestaurante);
+router.post('/cadastrar/restaurante', usuarioController.criarUsuarioRestaurante);
 
 /**
  * @swagger
@@ -143,6 +143,9 @@ router.post('/verifica-code', usuarioController.verificarCodigo);
  *         description: Erro interno do servidor
  */
 router.get('/', usuarioController.obterUsuarios);
+
+// Rota para buscar usuário por número de telefone
+router.get("/telefone", usuarioController.obterUsuarioPorTelefone);
 
 /**
  * @swagger

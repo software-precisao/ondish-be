@@ -67,18 +67,23 @@ const Restaurante = conn.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    imagem_documento_identidade: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     id_user: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
     stripe_account_id: {
       type: DataTypes.STRING,
-      allowNull: true, // Pode ser nulo inicialmente
+      allowNull: true, 
     },
     mcc: {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    
   },
   { freezeTableName: true }
 );

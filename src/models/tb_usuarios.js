@@ -87,11 +87,7 @@ const Usuario = conn.define(
     cep: {
       type: DataTypes.STRING,
       allowNull: true,
-    },
-    imagem_documento_identidade: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+    }
   },
   { freezeTableName: true }
 );

@@ -95,6 +95,9 @@ const restauranteController = {
       const filenamelogo = req.files.logo
         ? req.files.logo[0].filename
         : "default-logo.png";
+      const filenameDoc = req.files.documento
+        ? req.files.documento[0].filename
+        : "default-doc.png";
 
       const restauranteExistente = await Restaurante.findOne({
         where: {
@@ -149,7 +152,7 @@ const restauranteController = {
           first_name: usuario.nome,
           last_name: usuario.sobrenome,
           email: usuario.email,
-          phone: usuario.numero_telefone,
+          phone: `+351${req.body.telefone1}`,
           dob: {
             day: usuario.data_nascimento.split("-")[2],
             month: usuario.data_nascimento.split("-")[1],
@@ -182,11 +185,12 @@ const restauranteController = {
         logo: `/logo/${filenamelogo}`,
         capa: `/capa/${filenamecapa}`,
         instagram: req.body.instagram,
-        telefone1: req.body.telefone1,
-        telefone2: req.body.telefone2,
+        telefone1: `+351${req.body.telefone1}`,
+        telefone2: `+351${req.body.telefone2}`,
         morada: req.body.morada,
         numero_morada: req.body.numero_morada,
         codigo_postal: req.body.codigo_postal,
+        imagem_documento_identidade: `/documento/${filenameDoc}`,
         id_user: req.body.id_user,
         mcc: req.body.mcc,
       });
@@ -271,7 +275,7 @@ const restauranteController = {
       });
 
       const fileId = await uploadIdentityDocument(
-        usuario.imagem_documento_identidade
+        novoRestaurante.imagem_documento_identidade
       );
 
       await updateIdentityVerification(stripeAccount.id, fileId);

@@ -127,10 +127,7 @@ const restauranteController = {
           .send({ mensagem: "A configuração do usuário não é 2!" });
       }
 
-      if (usuario.config !== 1) {
-        usuario.config = 1;
-        await usuario.save();
-      }
+    
 
       let stripeAccount;
 
@@ -277,6 +274,11 @@ const restauranteController = {
       const fileId = await uploadIdentityDocument(
         novoRestaurante.imagem_documento_identidade
       );
+
+      if (usuario.config !== 1) {
+        usuario.config = 1;
+        await usuario.save();
+      }
 
       await updateIdentityVerification(stripeAccount.id, fileId);
 

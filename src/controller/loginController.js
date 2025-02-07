@@ -10,9 +10,9 @@ const { sendPushNotification } = require("../utils/pushNotification");
 
 const autenticarUsuarioApp = async (req, res, next) => {
   try {
-    const { numero_telefone, senha } = req.body;
+    const { email, senha } = req.body;
     const user = await Usuario.findOne({
-      where: { numero_telefone: numero_telefone },
+      where: { email: email },
     });
 
     if (!user) {
@@ -55,7 +55,6 @@ const autenticarUsuarioApp = async (req, res, next) => {
           avatar: user.avatar,
           id_nivel: user.id_nivel,
           id_status: user.id_status,
-          numero_telefone: user.numero_telefone,
           config: user.config,
           role: role,
           salaId: salaId,

@@ -120,16 +120,18 @@ const concluirRegistro = async (req, res) => {
       pin_registro,
       nome,
       sobrenome,
-      email,
       avatar,
       config,
       token_notification,
     } = req.body;
 
     const usuario = await Usuario.findOne({ where: { id_user } });
+
     if (!usuario) {
       return res.status(404).send({ mensagem: "Usuário não encontrado." });
     }
+
+    const email = usuario.email;
 
     const usuarioExistente = await Usuario.findOne({
       where: {

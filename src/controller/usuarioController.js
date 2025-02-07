@@ -123,7 +123,7 @@ const concluirRegistro = async (req, res) => {
       avatar,
       config,
       token_notification,
-      numero_telefone
+      telefone
     } = req.body;
 
     const usuario = await Usuario.findOne({ where: { id_user } });
@@ -173,7 +173,7 @@ const concluirRegistro = async (req, res) => {
           senha: await bcrypt.hash(senha, 10),
           avatar,
           config,
-          numero_telefone,
+          numero_telefone: telefone,
           token_notification: token_notification || usuario.token_notification,
           stripeCustomerId: stripeCustomerId,
         },

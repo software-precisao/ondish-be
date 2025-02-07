@@ -260,7 +260,7 @@ router.delete('/delete/:id_user', usuarioController.deletarUsuario);
 router.put('/edit/trocar-senha', usuarioController.trocaSenhaporEmail);
 router.put("/dados/:id_user", usuarioController.trocaSenha);
 
-router.post('/cadastrar', uploadFields, usuarioController.registrarNumeroTelefone);
+router.post('/cadastrar', uploadFields, usuarioController.registrarUsuarioPorEmail);
 router.put('/concluir-cadastro/:id_user', uploadFields, usuarioController.concluirRegistro);
 
 router.post("/notificacao/:id_user", usuarioController.enviarNotificacaoUsuario);

@@ -61,40 +61,39 @@ const enviarEmail = async (
   }
 };
 
-const registrarNumeroTelefone = async (req, res) => {
+const registrarUsuarioPorEmail = async (req, res) => {
   try {
-    const { numero_telefone, id_nivel, id_status } = req.body;
+    const { email, id_nivel, id_status } = req.body;
 
     const usuarioExistente = await Usuario.findOne({
-      where: { numero_telefone },
+      where: { email },
     });
     if (usuarioExistente) {
-      return res
-        .status(400)
-        .send({ mensagem: "Número de telefone já cadastrado." });
+      return res.status(400).send({ mensagem: "E-mail já cadastrado." });
     }
 
     const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
 
-    const smsResponse = await sendSms(
-      numero_telefone,
-      `Código de verificação é: ${codigoAleatorio}`
+    const emailEnviado = await enviarEmail(
+      email,
+      "Código de Verificação - Ondish Foods",
+      "template/code/index.html",
+      { code: codigoAleatorio }
     );
-    // console.log(smsResponse);
 
-    if (!smsResponse || !smsResponse.status) {
+    if (!emailEnviado) {
       return res
         .status(500)
-        .send({ error: "Falha ao enviar SMS de verificação." });
+        .send({ error: "Falha ao enviar e-mail de verificação." });
     }
 
     const novoUsuario = await Usuario.create({
-      numero_telefone,
+      email,
       id_nivel: id_nivel || 3,
       id_status: id_status || 1,
     });
 
-    const code = await Code.create({
+    await Code.create({
       type_code: 1,
       code: codigoAleatorio,
       id_user: novoUsuario.id_user,
@@ -102,14 +101,14 @@ const registrarNumeroTelefone = async (req, res) => {
 
     return res.status(201).send({
       mensagem:
-        "Número de telefone registrado com sucesso. Verifique o SMS enviado para concluir o cadastro.",
+        "E-mail registrado com sucesso. Verifique sua caixa de entrada para concluir o cadastro.",
       id_user: novoUsuario.id_user,
     });
   } catch (error) {
-    console.error("Erro ao registrar número de telefone:", error.message);
+    console.error("Erro ao registrar usuário por e-mail:", error.message);
     return res
       .status(500)
-      .send({ error: "Erro interno ao registrar número de telefone." });
+      .send({ error: "Erro interno ao registrar usuário por e-mail." });
   }
 };
 
@@ -240,7 +239,7 @@ const criarUsuarioRestaurante = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(req.body.senha, 10);
-   
+
     const novoUsuario = await Usuario.create({
       nome: req.body.nome,
       sobrenome: req.body.sobrenome,
@@ -401,7 +400,9 @@ const obterUsuarioPorTelefone = async (req, res, next) => {
 
     // Verifica se o usuário foi encontrado
     if (!usuario) {
-      return res.status(404).send({ message: "Número de telefone não encontrado." });
+      return res
+        .status(404)
+        .send({ message: "Número de telefone não encontrado." });
     }
 
     return res.status(200).send({ response: usuario });
@@ -678,7 +679,7 @@ module.exports = {
   deletarUsuario,
   trocaSenha,
   trocaSenhaporEmail,
-  registrarNumeroTelefone,
+  registrarUsuarioPorEmail,
   concluirRegistro,
   enviarEmail,
   enviarNotificacaoUsuario,

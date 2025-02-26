@@ -103,14 +103,13 @@ const restauranteController = {
         where: {
           [Sequelize.Op.or]: [
             { nif: req.body.nif },
-            { nome_restaurante: req.body.nome_restaurante },
           ],
         },
       });
 
       if (restauranteExistente) {
         return res.status(400).send({
-          mensagem: "Restaurante já cadastrado com este NIF ou nome.",
+          mensagem: "Restaurante já cadastrado com este NIF.",
           restaurante: restauranteExistente,
         });
       }

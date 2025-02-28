@@ -156,7 +156,7 @@ app.use((req, res, next) => {
 
 const syncModels = async () => {
   try {
-    await conn.sync({ force: true });
+    // await conn.sync({ force: true });
     console.log("Models synchronized successfully.");
   } catch (error) {
     console.error("Error synchronizing models:", error);

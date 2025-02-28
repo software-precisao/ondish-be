@@ -101,9 +101,7 @@ const restauranteController = {
 
       const restauranteExistente = await Restaurante.findOne({
         where: {
-          [Sequelize.Op.or]: [
-            { nif: req.body.nif },
-          ],
+          [Sequelize.Op.or]: [{ nif: req.body.nif }],
         },
       });
 
@@ -122,11 +120,9 @@ const restauranteController = {
 
       if (usuario.config !== 2) {
         return res
-          .status(400)
+          .status(409)
           .send({ mensagem: "A configuração do usuário não é 2!" });
       }
-
-    
 
       let stripeAccount;
 

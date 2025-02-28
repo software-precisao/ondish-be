@@ -89,19 +89,20 @@ const Usuario = conn.define(
       allowNull: true,
     },
   },
-  { freezeTableName: true }
+  {
+    freezeTableName: true,
+    timestamps: true, 
+  }
 );
 
 Usuario.belongsTo(Nivel, {
   foreignKey: "id_nivel",
-  foreignKeyConstraint: true,
   onDelete: "RESTRICT",
   onUpdate: "CASCADE",
 });
 
 Usuario.belongsTo(Status, {
   foreignKey: "id_status",
-  foreignKeyConstraint: true,
   onDelete: "RESTRICT",
   onUpdate: "CASCADE",
 });

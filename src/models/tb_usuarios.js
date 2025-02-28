@@ -87,7 +87,7 @@ const Usuario = conn.define(
     cep: {
       type: DataTypes.STRING,
       allowNull: true,
-    }
+    },
   },
   { freezeTableName: true }
 );
@@ -95,11 +95,15 @@ const Usuario = conn.define(
 Usuario.belongsTo(Nivel, {
   foreignKey: "id_nivel",
   foreignKeyConstraint: true,
+  onDelete: "RESTRICT",
+  onUpdate: "CASCADE",
 });
 
 Usuario.belongsTo(Status, {
   foreignKey: "id_status",
   foreignKeyConstraint: true,
+  onDelete: "RESTRICT",
+  onUpdate: "CASCADE",
 });
 
 module.exports = Usuario;

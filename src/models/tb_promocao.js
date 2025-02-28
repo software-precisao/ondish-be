@@ -23,8 +23,7 @@ const Promocao = conn.define(
     },
     codigo: {
       type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
+      allowNull: false
     },
   },
   {
